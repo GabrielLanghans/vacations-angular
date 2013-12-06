@@ -1,0 +1,76 @@
+@import "normalize";
+@import "base";
+@import "fonts";
+@import "animate";
+
+//variables
+@imagePath:"../imgs";
+
+//helpers
+.opacity(@opacity: 0.5) {
+    -moz-opacity: @opacity;
+    -khtml-opacity: @opacity;
+    -webkit-opacity: @opacity;
+    opacity: @opacity;
+    @opperc: @opacity * 100;
+    -ms-filter: ~"progid:DXImageTransform.Microsoft.Alpha(opacity=@{opperc})";
+    filter: ~"alpha(opacity=@{opperc})";
+}
+.background-clip(@argument: padding-box) {
+    -moz-background-clip: @argument;
+    -webkit-background-clip: @argument;
+    background-clip: @argument;
+}
+.border-radius(@topright: 0, @bottomright: 0, @bottomleft: 0, @topleft: 0) {
+    -webkit-border-top-right-radius: @topright;
+    -webkit-border-bottom-right-radius: @bottomright;
+    -webkit-border-bottom-left-radius: @bottomleft;
+    -webkit-border-top-left-radius: @topleft;
+    -moz-border-radius-topright: @topright;
+    -moz-border-radius-bottomright: @bottomright;
+    -moz-border-radius-bottomleft: @bottomleft;
+    -moz-border-radius-topleft: @topleft;
+    border-top-right-radius: @topright;
+    border-bottom-right-radius: @bottomright;
+    border-bottom-left-radius: @bottomleft;
+    border-top-left-radius: @topleft;
+    .background-clip(padding-box);
+}
+.transition(@property:all, @duration:0.2s, @ease:linear) {
+  -webkit-transition: @property @duration @ease;
+  -moz-transition: @property @duration @ease;
+  -o-transition: @property @duration @ease;
+  transition: @property @duration @ease;
+}
+.transition2(@property, @duration, @ease, @property2, @duration2, @ease2) {
+  -webkit-transition: @property @duration @ease, @property2 @duration2 @ease2;
+  -moz-transition: @property @duration @ease, @property2 @duration2 @ease2;
+  -o-transition: @property @duration @ease, @property2 @duration2 @ease2;
+  transition: @property @duration @ease, @property2 @duration2 @ease2;
+}
+
+.centered{margin:0 auto;}
+.hidden-text{text-indent:-9999px;}
+.bg(@img, @format:png, @repeat:no-repeat, @position:left top) {
+    background: url("@{imagePath}/@{img}.@{format}") @repeat @position;
+}
+
+//animations
+@keyframes fakeSelect{
+    0%   {top:13px;}
+    50%  {top:15px;}
+    100% {top:13px;}
+}
+@-webkit-keyframes fakeSelect{
+    0%   {top:13px;}
+    50%  {top:15px;}
+    100% {top:13px;}
+}
+
+
+
+@media screen{
+    //geral
+    
+}
+
