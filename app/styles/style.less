@@ -71,6 +71,16 @@
 
 @media screen{
     //geral
-    
+    html, body, #container-map{height:100%; margin:0; padding:0;}
+
+.dir{position:absolute; z-index:100; right:0; top:50px; width:100px; height:40px; padding:0 20px; background:#fff; overflow:hidden;}
+.dir.on{width:22%; height:calc(100% - 50px);}
+.dir h1{float:left; font-size:20px; cursor:pointer;}
+.dir .close{float:right;}
+
+.lista-atracoes{clear:both; list-style-position:inside; margin:0; padding:0;}
+
+.sub-title-2, .sub-title-2 a{margin-top:0 !important; font-size:15px !important; font-weight:bold !important;}
+.tooltip-map p{margin:0 !important;}
 }
 

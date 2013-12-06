@@ -161,4 +161,4 @@ body{-webkit-backface-visibility:hidden;}
 .animated.lightSpeedOut{-webkit-animation-duration:0.25s;-moz-animation-duration:0.25s;-o-animation-duration:0.25s;animation-duration:0.25s;}
 .centered{margin:0 auto;}
 .hidden-text{text-indent:-9999px;}
-@keyframes fakeSelect{0%{top:13px;} 50%{top:15px;} 100%{top:13px;}}@-webkit-keyframes fakeSelect{0%{top:13px;} 50%{top:15px;} 100%{top:13px;}}@media screen{}
+@keyframes fakeSelect{0%{top:13px;} 50%{top:15px;} 100%{top:13px;}}@-webkit-keyframes fakeSelect{0%{top:13px;} 50%{top:15px;} 100%{top:13px;}}@media screen{html,body,#container-map{height:100%;margin:0;padding:0;} .dir{position:absolute;z-index:100;right:0;top:50px;width:100px;height:40px;padding:0 20px;background:#fff;overflow:hidden;} .dir.on{width:22%;height:calc(50%);} .dir h1{float:left;font-size:20px;cursor:pointer;} .dir .close{float:right;} .lista-atracoes{clear:both;list-style-position:inside;margin:0;padding:0;} .sub-title-2,.sub-title-2 a{margin-top:0 !important;font-size:15px !important;font-weight:bold !important;} .tooltip-map p{margin:0 !important;}}
