@@ -1,6 +1,49 @@
 'use strict';
 
-vacationsApp.controller("MapCtrl", function($scope, $routeParams){
+vacationsApp.factory("fireFactory", function($rootScope, angularFire) {
+    var baseUrl = 'https://vacations-initial.firebaseio.com/',
+        path = "";
+            
+    return {
+        firebaseRef: function(path) {
+            path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;
+            return new Firebase(path);
+        },
+        dataRef: function(path) {
+            path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;            
+            // $rootScope.field = [];
+            // $rootScope.alert = [];
+
+            var ref = new Firebase(path);
+
+            angularFire(ref, $rootScope, "dataList");            
+
+            return $rootScope;
+
+
+        }
+    };
+});
+
+
+vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $routeParams, fireFactory){
+
+    var defer = $q.defer();
+
+    $scope.get = function(){        
+        defer.resolve(fireFactory.dataRef("users"));
+        return defer.promise;
+    }
+
+    $scope.get().then(function (returnedData) {
+        $scope.users = returnedData;
+        //os dados ficam em $scope.users.dataList
+        console.log($scope);
+    });
+
+    //$scope.avengers = fireFactory.dataRef("heroes");
+
+
 
 
 	// marker = new google.maps.Marker({
