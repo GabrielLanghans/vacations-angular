@@ -9,6 +9,7 @@
     "angular-route": "~1.2.0-rc.3",
     "angular-fire": "~0.3.1",
     "angular-animate": "~1.2.0-rc.3",
+    "angular-google-maps": "1.0.2",
     "animate.css": "~2.1.0"
   },
   "devDependencies": {
@@ -16,7 +17,8 @@
     "angular-scenario": "~1.0.7"
   },
   "resolutions": {
-    "angular": "1.2.3"
+    "angular": "1.2.3",
+    "angular-mocks": "~1.0.7"
   },
   "authors": [
     "Gabriel Langhans"

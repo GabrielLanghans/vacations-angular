@@ -1,9 +1,21 @@
-<div class="hero-unit">
-  <h1>'Allo, 'Allo!</h1>
-  <p>You now have</p>
-  <ul>
-      <li ng-repeat="thing in awesomeThings">{{thing}}</li>
-  </ul>
-  <p>installed.</p>
-  <h3>Enjoy coding! - Yeoman</h3>
+
+
+<!-- <google-map center="center" draggable="true" zoom="zoom" markers="markers" mark-click="true" style="height: 400px"></google-map> -->
+
+
+<!-- <div ng-controller="MapCtrl" style="height: 400px">
+    <google-map id="mymap" center="center" zoom="zoom" draggable="false" mark-click="true" style="height: 400px; display:block;">
+        <markers>
+            <marker ng-repeat="marker in markers" coords="marker">
+            </marker>
+        </markers>
+    </google-map>
+</div> -->
+
+<div data-ng-controller="MapCtrl">
+	
+	
+	<div data-draw-map></div>
+	
+	
 </div>
