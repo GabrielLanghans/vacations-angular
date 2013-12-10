@@ -16,10 +16,21 @@ vacationsApp.factory("fireFactory", function($rootScope, angularFire) {
 
             var ref = new Firebase(path);
 
-            angularFire(ref, $rootScope, "dataList");            
+
+
+            angularFire(ref, $rootScope, "dataList");
+
+            
+                return $rootScope;
+            
+            
+
+
+
+            /*angularFire(ref, $rootScope, "dataList");            
 
             return $rootScope;
-
+*/
 
         }
     };
@@ -30,16 +41,49 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $routeParams, 
 
     var defer = $q.defer();
 
-    $scope.get = function(){        
-        defer.resolve(fireFactory.dataRef("users"));
+    
+    $scope.get = function(){            
+        defer.resolve(fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr"));        
         return defer.promise;
     }
 
-    $scope.get().then(function (returnedData) {
+    
+
+    $scope.get().then(function (returnedData) {       
+        var teste = returnedData;
+        console.log(teste);
+        //console.log(teste.dataList);
+
+        setTimeout(function(){console.log(teste.dataList)},1000);
+
+
         $scope.users = returnedData;
         //os dados ficam em $scope.users.dataList
-        console.log($scope);
+        console.log($scope.users.dataList);
     });
+
+
+    //$scope.users = fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr");
+
+    // $scope = fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr");
+
+    // console.log($scope);
+    // console.log($scope.dataList);
+
+
+
+   
+
+
+    
+
+
+
+
+    // console.log($scope);
+
+    // setTimeout(function(){$scope.users = fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr");console.log($scope)},10000);
+
 
     //$scope.avengers = fireFactory.dataRef("heroes");
 
