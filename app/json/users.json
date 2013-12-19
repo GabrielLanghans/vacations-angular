@@ -4,13 +4,13 @@
             "id": "-J5hOuUsRGBpAG_rhWVr", "name": "Gabriel", "travels":[
                 {"date":"26/10/2013", "places":
                     [
-                        {"position":"51.5034412,-0.119678199999953", "id":"01", "name":"London Eye", "address":"Riverside Bldg, County Hall, Westminster Bridge Rd, London SE1 7PB, Reino Unido", "url":"http://www.londoneye.com/"},
-                        {"position":"51.5227504,-0.15506379999999353", "id":"02", "name":"Museu Madame Tussauds", "address":"Marylebone Rd, London NW1 5LR, Reino Unido", "url":"http://www.madametussauds.com/"}
+                        {"position":"52.5034412,-0.219678199999953", "id":"03", "name":"Teste03", "address":"Address03", "url":"http://google.com/"}
                     ]
                 },
                 {"date":"05/03/2014", "places":
                     [
-                        {"position":"52.5034412,-0.219678199999953", "id":"03", "name":"Teste03", "address":"Address03", "url":"http://google.com/"} 
+                        {"position":"51.5034412,-0.119678199999953", "id":"01", "name":"London Eye", "address":"Riverside Bldg, County Hall, Westminster Bridge Rd, London SE1 7PB, Reino Unido", "url":"http://www.londoneye.com/"},
+                        {"position":"51.5227504,-0.15506379999999353", "id":"02", "name":"Museu Madame Tussauds", "address":"Marylebone Rd, London NW1 5LR, Reino Unido", "url":"http://www.madametussauds.com/"}                        
                     ]
                 }
             ]

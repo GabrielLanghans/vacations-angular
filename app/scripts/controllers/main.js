@@ -1,157 +1,60 @@
 'use strict';
 
-vacationsApp.factory("fireFactory", function($rootScope, angularFire) {
-    var baseUrl = 'https://vacations-initial.firebaseio.com/',
-        path = "";
-            
-    return {
-        firebaseRef: function(path) {
-            path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;
-            return new Firebase(path);
-        },
-        dataRef: function(path) {
-            path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;            
-            // $rootScope.field = [];
-            // $rootScope.alert = [];
+/*vacationsApp.controller("authCtrl", function($scope, $rootScope, $routeParams, fireFactory){
+    $rootScope.status = {log: false, name: "", username: ""};
 
-            var ref = new Firebase(path);
+    var usuario = [];
 
-
-
-            angularFire(ref, $rootScope, "dataList");
-
-            
-                return $rootScope;
-            
-            
-
-
-
-            /*angularFire(ref, $rootScope, "dataList");            
-
-            return $rootScope;
-*/
-
+    var auth = new FirebaseSimpleLogin(fireFactory.firebaseRef(), function(error, user) {
+        if (error) {
+            usuario = error;
+        } else if (user) {            
+            $rootScope.status = {log: true, name: user.name, username: user.username};
+            usuario = user;
+        } else {
+            $rootScope.status = {log: false, name: "", username: ""};
         }
-    };
-});
-
-
-vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $routeParams, fireFactory){
-
-    var defer = $q.defer();
-
-    
-    $scope.get = function(){            
-        defer.resolve(fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr"));        
-        return defer.promise;
-    }
-
-    
-
-    $scope.get().then(function (returnedData) {       
-        var teste = returnedData;
-        console.log(teste);
-        //console.log(teste.dataList);
-
-        setTimeout(function(){console.log(teste.dataList)},1000);
-
-
-        $scope.users = returnedData;
-        //os dados ficam em $scope.users.dataList
-        console.log($scope.users.dataList);
+        $rootScope.$apply();
     });
 
+    $scope.login = function(){
+        auth.login("facebook");
+    }
+    $scope.logout = function(){
+        auth.logout();
+    }
+})*/
 
-    //$scope.users = fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr");
+vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams){
+    var i;
 
-    // $scope = fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr");
+    for(i=0; i<$scope.dataList.length; i++){
+        $scope.markers.push($scope.dataList[i]);            
+        //console.log($scope.dataList[i]);
+    }
 
-    // console.log($scope);
-    // console.log($scope.dataList);
-
-
-
-   
-
-
-    
-
-
-
-
-    // console.log($scope);
-
-    // setTimeout(function(){$scope.users = fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr");console.log($scope)},10000);
-
-
-    //$scope.avengers = fireFactory.dataRef("heroes");
-
-
-
-
-	// marker = new google.maps.Marker({
- //        position : new google.maps.LatLng(51.5034412,-0.119678199999953),
- //        map : map,
- //        pinId : 1,
- //        pinName : "London Eye",
- //        pinAddress : "Riverside Bldg, County Hall, Westminster Bridge Rd, London SE1 7PB, Reino Unido",
- //        pinUrl : "http://www.londoneye.com/",
- //        icon: {url : "sprite.png", size :{width:26,height:40} , origin:new google.maps.Point(0,0) },
- //        zIndex: 100
- //    });
-
-
-	//var map;
-
-	$scope.markers = [
-		{
-			positionLat: 51.5034412,
-			positionLong: -0.119678199999953,
-			map: "map",
-			pinId: 1,
-			pinName: "London Eye",
-	        pinAddress: "Riverside Bldg, County Hall, Westminster Bridge Rd, London SE1 7PB, Reino Unido",
-	        pinUrl: "http://www.londoneye.com/",
-	        iconUrl: "sprite.png",
-	        iconW: 26,
-	        iconH: 40,
-	        iconOriginX: 0,
-	        iconOriginY: 0,
-	        zIndex: 100
-		},
-		{
-			positionLat: 51.5227504,
-			positionLong: -0.15506379999999353,
-			map: "map",
-			pinId: 2,
-			pinName: "Museu Madame Tussauds",
-	        pinAddress: "Marylebone Rd, London NW1 5LR, Reino Unido",
-	        pinUrl: "http://www.madametussauds.com/",
-	        iconUrl: "sprite.png",
-	        iconW: 26,
-	        iconH: 40,
-	        iconOriginX: 40,
-	        iconOriginY: 0,
-	        zIndex: 100
-		}	
-	];
+    console.log($scope);
+    console.log($rootScope);
+    console.log($scope.dataList);
 
 
 	$scope.options = {
 	    zoom: 10,
-	    centerLat: 51.45,
-	    centerLong: -0.20,	    
+	    centerLat: $scope.markers[$scope.markers.length-1].position.split(",")[0],
+	    centerLong: $scope.markers[$scope.markers.length-1].position.split(",")[1],	    
 	    minZoom: 9,    
 	    rotateControl: false,
 	    streetViewControl: false	    
 	}
-
-	
-
-	//console.log($scope.initializeMap());
-
 });
+
+// function startWatch($scope) {
+//     $scope.addMarker = function() {
+//         console.log($scope.newMarker);
+//         $scope.markers.push($scope.newMarker);
+//         $scope.newMarker = '';
+//     }
+// }
 
 
 vacationsApp.directive('drawMap', function () {
@@ -189,17 +92,26 @@ vacationsApp.directive('drawMap', function () {
 				    // maxWidth: 50
 				});
 
+                
+
+
 				for(i = 0; i < scope.markers.length; i++){
+                    console.log(scope.markers[i]);
+                    console.log(scope.markers[i].position.split(",")[0]);
+                    console.log(scope.markers[i].position.split(",")[1]);
+
 					marker = new google.maps.Marker({
-				        position : new google.maps.LatLng(scope.markers[i].positionLat, scope.markers[i].positionLong),
+				        position : new google.maps.LatLng(scope.markers[i].position.split(",")[0], scope.markers[i].position.split(",")[1]),
 				        map : map,
-				        pinId : scope.markers[i].pinId,
-				        pinName : scope.markers[i].pinName,
-				        pinAddress : scope.markers[i].pinAddress,
-				        pinUrl : scope.markers[i].pinUrl,
+				        pinId : scope.markers[i].id,
+				        pinName : scope.markers[i].name,
+				        pinAddress : scope.markers[i].address,
+				        pinUrl : scope.markers[i].url,
 				        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
 				        zIndex: 100
 				    });
+
+                    console.log(marker);
 
 				    google.maps.event.addListener(marker, 'mouseover', function() {
 					    infowindow.close(); 
@@ -217,10 +129,11 @@ vacationsApp.directive('drawMap', function () {
 			scope.drawPin = function(){
 				var arrayPins = scope.getPin();
 				for(i = 0; i < arrayPins.length; i++){
-			        console.log(pins[i]);
+			        //console.log(pins[i]);
 			        arrayPins[i].setMap(map);
 			    }
-			}		
+			}
+            		
 
 			google.maps.event.addDomListener(window, 'load', scope.initializeMap());
 
