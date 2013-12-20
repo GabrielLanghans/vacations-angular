@@ -1,6 +1,20 @@
 'use strict';
 
-/*vacationsApp.controller("authCtrl", function($scope, $rootScope, $routeParams, fireFactory){
+
+// ALTERNATIVAS:
+/*
+- carregar os dados da firebase no routeprovider (como esta sendo feito hj) e depois só ler os dados do usuario logado na directive
+
+- apenas carregar os dados após logado e talvez apenas do usuário que se logou.
+
+- de qualquer forma, para salvar os dados a permissão só será concedida se o user for correto.
+
+
+
+*/
+
+
+vacationsApp.controller("authCtrl", function($scope, $rootScope, $routeParams, fireFactory){
     $rootScope.status = {log: false, name: "", username: ""};
 
     var usuario = [];
@@ -8,10 +22,16 @@
     var auth = new FirebaseSimpleLogin(fireFactory.firebaseRef(), function(error, user) {
         if (error) {
             usuario = error;
+            console.log("error: ");
+            console.log(usuario);
         } else if (user) {            
             $rootScope.status = {log: true, name: user.name, username: user.username};
             usuario = user;
+            console.log("logou: ");
+            console.log(usuario);
         } else {
+            console.log("else: ");
+            console.log(usuario);
             $rootScope.status = {log: false, name: "", username: ""};
         }
         $rootScope.$apply();
@@ -23,7 +43,7 @@
     $scope.logout = function(){
         auth.logout();
     }
-})*/
+})
 
 vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams){
     var i;
@@ -33,16 +53,16 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
         //console.log($scope.dataList[i]);
     }
 
-    console.log($scope);
-    console.log($rootScope);
-    console.log($scope.dataList);
+    // console.log($scope);
+    // console.log($rootScope);
+    // console.log($scope.dataList);
 
 
 	$scope.options = {
 	    zoom: 10,
 	    centerLat: $scope.markers[$scope.markers.length-1].position.split(",")[0],
 	    centerLong: $scope.markers[$scope.markers.length-1].position.split(",")[1],	    
-	    minZoom: 9,    
+	    minZoom: 7,    
 	    rotateControl: false,
 	    streetViewControl: false	    
 	}
@@ -96,10 +116,6 @@ vacationsApp.directive('drawMap', function () {
 
 
 				for(i = 0; i < scope.markers.length; i++){
-                    console.log(scope.markers[i]);
-                    console.log(scope.markers[i].position.split(",")[0]);
-                    console.log(scope.markers[i].position.split(",")[1]);
-
 					marker = new google.maps.Marker({
 				        position : new google.maps.LatLng(scope.markers[i].position.split(",")[0], scope.markers[i].position.split(",")[1]),
 				        map : map,
@@ -110,8 +126,6 @@ vacationsApp.directive('drawMap', function () {
 				        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
 				        zIndex: 100
 				    });
-
-                    console.log(marker);
 
 				    google.maps.event.addListener(marker, 'mouseover', function() {
 					    infowindow.close(); 

@@ -1,7 +1,7 @@
 {
     "users":{
-        "-J5hOuUsRGBpAG_rhWVr":{
-            "id": "-J5hOuUsRGBpAG_rhWVr", "name": "Gabriel", "travels":[
+        "facebook:100002807237878":{
+            "uid": "facebook:100002807237878", "name": "Gabriel", "travels":[
                 {"date":"26/10/2013", "places":
                     [
                         {"position":"52.5034412,-0.219678199999953", "id":"03", "name":"Teste03", "address":"Address03", "url":"http://google.com/"}
@@ -17,3 +17,99 @@
         }
     }
 }
+
+/*
+{
+  "rules": {
+    "users": {
+      "$user": {
+        ".read": "$user == auth.uid",
+        ".write": "$user == auth.uid",
+        ".validate": "newData.hasChildren(['uid', 'name', 'travels'])",
+
+        "uid": {
+          ".validate": "newData.isString()"
+        },
+
+        "name": {
+          ".validate": "newData.isString()"
+        }
+      }
+    }
+  }
+}
+*/
+
+/*
+{
+  "rules": {
+    "users": {
+      "$user": {
+        ".read": "$user == auth.username",
+        ".write": "$user == auth.username",
+        ".validate": "newData.hasChildren(['name'])",
+        "name": {
+          ".validate": "newData.hasChildren(['first', 'last'])",
+          "first": {
+            ".validate": "newData.isString()"
+          },
+          "last": {
+            ".validate": "newData.isString()"
+          }
+        },
+        "age": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "about_me": {
+          ".validate": "newData.isString() && newData.val().length >= 10"
+        }
+      }
+    }
+  }
+}
+
+{
+  ...
+  "name": {
+    ".validate": "data.hasChildren(['first', 'last'])"
+    "first": { ... }
+    "last": { ... }
+    "$other": {
+      ".validate": false
+    }
+  }
+}
+*/
+
+/*
+var url = 'https://<YOUR-FIREBASE>.firebaseio.com/users/fred';
+var fredRef = new Firebase(url);
+
+// Assume we've authenticated to the SampleChat Firebase as
+// user 'fred' and /users/fred is currently empty.
+fredRef.set({ name: { first: 'Fred' } });
+// WILL FAIL since 'name' must always have a 'last' child.
+
+fredRef.set({ name: { first: 'Fred', last: 'Flintstone' } });
+// WILL SUCCEED.  Fred now has a first and last name.
+
+fredRef.child('name/first').remove();
+// WILL FAIL since 'name' must always have both a 'first' and 'last' child.
+
+fredRef.child('age').set('seventeen');
+// WILL FAIL since age must be a number.
+
+fredRef.child('age').set(17);
+// WILL SUCCEED.  Fred now has a first/last name and an age.
+
+fredRef.child('name').remove();
+// WILL FAIL since a user must always have a 'name'.
+
+fredRef.child('age').remove();
+fredRef.child('name').remove();
+// WILL SUCCEED.  After removing 'age', only 'name' remains under
+// /users/fred.
+
+// So removing 'name' will effectively remove /users/fred entirely, and
+// /users is not required to have a 'fred' child, so this will succeed.
+*/
