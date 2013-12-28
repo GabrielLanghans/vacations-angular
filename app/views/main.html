@@ -14,8 +14,64 @@
 
 <div data-ng-controller="MapCtrl">
 	
-	
+	HOME
 	<div data-draw-map></div>
+
+
+    <div data-ng-controller="NavCtrl">
+        <ul>
+            <li data-ng-repeat="item in menu" data-ng-click="setPage(item)" data-ng-class="{active : isSelected(item)}">{{item}}</li>
+        </ul>
+
+        <!-- {{selected}} -->
+
+        <div ng-switch on="selected">
+            <!-- <div id="attractions" ng-switch-default>
+                aaa
+            </div> -->
+            <div id="attractions" ng-switch-when="Atrações">
+                <h2>Atrações</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-ng-repeat="place in dataList">
+                            <td><a href="javascript:void(0);" title="Informações">{{place.name}}</a></td>
+                            <td><button type="button">Editar</button></td>
+                            <td><button type="button">Remover</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button">Novo</button>
+                bbb
+            </div>
+            <div id="attractions" ng-switch-when="Roteiro">
+                ccc
+            </div>
+        </div>
+        
+    </div>
+
+
+
+    <!-- <div ng-controller="Ctrl">
+      <select ng-model="selection" ng-options="item for item in items">
+      </select>
+      <tt>selection={{selection}}</tt>
+      <hr/>
+      <div class="animate-switch-container"
+        ng-switch on="selection">
+          <div class="animate-switch" ng-switch-when="settings">Settings Div</div>
+          <div class="animate-switch" ng-switch-when="home">Home Span</div>
+          <div class="animate-switch" ng-switch-default>default</div>
+      </div>
+
+<tr data-ng-repeat='actor in avengers.dataList | avengersFilter:avengers.field' data-ng-click='match({id:actor.id, name:actor.name, char:actor.character, rating:actor.rating, defRating:actor.def-rating, index:$index, lastId:$last})' class=''>
+ -->
+
 	
-	{{users.dataList.travels[1]}}
+	<!-- {{user}} -->
 </div>

@@ -6,6 +6,8 @@ var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAni
 vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) {
     var baseUrl = 'https://vacations-initial.firebaseio.com/',
         path = "";
+
+    $rootScope.dataList = [];
             
     return {
         firebaseRef: function(path) {
@@ -13,14 +15,15 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) 
             return new Firebase(path);
         },
         dataRef: function(path) {
-            path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;            
+            $rootScope.dataList = [];
+
+            path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;     
 
             var ref = new Firebase(path);
 
             var promise = angularFire(ref, $rootScope, "dataList");
 
-            $rootScope.markers = [];
-            $rootScope.newMarker = [];
+            
 
             /*promise.then(function(){
                 console.log($rootScope);
@@ -33,13 +36,68 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) 
     };
 });
 
+
 vacationsApp.config(function ($routeProvider, $locationProvider) {
     $routeProvider
       .when('/', {
+        templateUrl: 'views/login.html',
+        resolve: {
+          /*dataLoad: function(fireFactory) {            
+            return fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr/travels/0/places");
+          }*/
+          loadLogin: function($route, $rootScope, $location){
+
+            
+
+            if($rootScope.user){
+              // console.log("=======================");
+              // console.log($rootScope.user);
+              // console.log("=======================");
+
+              $location.path('/home');
+              //redirectTo: '/';
+            }
+            else{
+              // console.log("=======================");
+              // console.log("user vazio: "+ $rootScope.user);
+              // console.log("=======================");
+            }
+            
+          }
+        }
+        //controller: 'MapCtrl'
+      })
+      .when('/home', {
         templateUrl: 'views/main.html',
         resolve: {
-          dataLoad: function(fireFactory) {            
-            return fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr/travels/0/places");
+          dataLoad: function($route, fireFactory, $rootScope, $location) {    
+
+            
+
+            //$rootScope.dataList = [];
+
+            if($rootScope.user){
+              if(!$rootScope.dataList.length){
+                // console.log("========== IF =============");
+                // console.log($rootScope.user);
+                // console.log("=======================");
+                return fireFactory.dataRef("users/" + $rootScope.user.uid + "/travels/0/places");  
+              }
+              else{
+                //console.log("========== ELSE =============");
+                return true;
+              }
+              
+            }
+            else{
+              // console.log("=======================");
+              // console.log("user vazio: "+ $rootScope.user);
+              // console.log("=======================");
+
+              return $location.path("/");
+            }
+            
+
           }
         }
         //controller: 'MapCtrl'
@@ -48,6 +106,5 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
         redirectTo: '/'
       });
 
-      $locationProvider.html5Mode(true);
+      //$locationProvider.html5Mode(true);
   });
-

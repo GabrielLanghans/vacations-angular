@@ -1,7 +1,7 @@
 
 	<div class="pull-right" data-ng-controller="authCtrl">		
-		<button ng-hide="status.log" type="button" class="btn btn-default navbar-btn" ng-click="login()">Logar com Facebook</button> 
-		<p ng-show="status.log" class="navbar-text">
-			Olá, {{status.name}} | <a href="javascript:void(0);" class="navbar-link" ng-click="logout()">logout</a>
+		<button ng-hide="user.uid" type="button" class="btn btn-default navbar-btn" ng-click="login()">Logar com Facebook</button> 
+		<p ng-show="user.uid" class="navbar-text">
+			Olá, {{user.username}} | <a href="javascript:void(0);" class="navbar-link" ng-click="logout()">logout</a>
 		</p>
 	</div>

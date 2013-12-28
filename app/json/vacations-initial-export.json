@@ -1,0 +1,33 @@
+{
+  "users" : {
+    "-J5hOuUsRGBpAG_rhWVr" : {
+      "name" : "Gabriel",
+      "travels" : [ {
+        "date" : "26/10/2013",
+        "places" : [ {
+          "address" : "Riverside Bldg, County Hall, Westminster Bridge Rd, London SE1 7PB, Reino Unido",
+          "position" : "51.5034412,-0.119678199999953",
+          "url" : "http://www.londoneye.com/",
+          "name" : "London Eye",
+          "id" : "01"
+        }, {
+          "address" : "Marylebone Rd, London NW1 5LR, Reino Unido",
+          "position" : "51.5227504,-0.15506379999999353",
+          "url" : "http://www.madametussauds.com/",
+          "name" : "Museu Madame Tussauds",
+          "id" : "02"
+        } ]
+      }, {
+        "date" : "05/03/2014",
+        "places" : [ {
+          "address" : "Address03",
+          "position" : "52.5034412,-0.219678199999953",
+          "url" : "http://google.com/",
+          "name" : "Teste03",
+          "id" : "03"
+        } ]
+      } ],
+      "id" : "-J5hOuUsRGBpAG_rhWVr"
+    }
+  }
+}

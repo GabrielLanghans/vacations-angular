@@ -14,27 +14,63 @@
 */
 
 
-vacationsApp.controller("authCtrl", function($scope, $rootScope, $routeParams, fireFactory){
-    $rootScope.status = {log: false, name: "", username: ""};
+vacationsApp.factory('User', function ($rootScope) {
+    var userResponse = [];
 
-    var usuario = [];
+    return {
+        setUser:function (data) {
+            userResponse = data;
+            //console.log(data);
+        },
+        getUser:function () {
+            return userResponse;
+        }
+    };
+});
+
+vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fireFactory, User){
+    //$rootScope.status = {log: false, name: "", username: ""};
+
+    $rootScope.user = User.getUser();
+
+    //$rootScope.user = userService;
 
     var auth = new FirebaseSimpleLogin(fireFactory.firebaseRef(), function(error, user) {
         if (error) {
-            usuario = error;
+            User.setUser(error);
+            $rootScope.user = error;
+
+            console.log("=======================");
             console.log("error: ");
-            console.log(usuario);
+            console.log($rootScope.user);
+            console.log("=======================");
+
         } else if (user) {            
-            $rootScope.status = {log: true, name: user.name, username: user.username};
-            usuario = user;
+            //$rootScope.status = {log: true, name: user.name, username: user.username};
+            User.setUser(user);
+            $rootScope.user = user;
+
+            console.log("=======================");
             console.log("logou: ");
-            console.log(usuario);
-        } else {
-            console.log("else: ");
-            console.log(usuario);
-            $rootScope.status = {log: false, name: "", username: ""};
+            console.log($rootScope.user);
+            console.log($scope.user);
+            console.log("=======================");
+
+            $location.path("/home");
+
+            //$location.search('user',$rootScope.user.uid).path('/home');
+
+        } else {            
+            User.setUser("");
+            $rootScope.user = [];
+
+            console.log("=======================");
+            console.log("usuário deslogado");
+            console.log("=======================");
+
+            $location.path('/');
         }
-        $rootScope.$apply();
+        $scope.$apply();
     });
 
     $scope.login = function(){
@@ -45,10 +81,22 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $routeParams, f
     }
 })
 
-vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams){
+vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams, User){
+
+    $rootScope.user = User.getUser();
+    $scope.user = User.getUser();
+    $scope.markers = [];
+
+    // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    // console.log($rootScope.user);
+    // console.log($scope.user);
+    // console.log($scope);
+    // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
     var i;
 
     for(i=0; i<$scope.dataList.length; i++){
+        console.log($scope.dataList[i]);
         $scope.markers.push($scope.dataList[i]);            
         //console.log($scope.dataList[i]);
     }
@@ -105,6 +153,8 @@ vacationsApp.directive('drawMap', function () {
 			};
 
 			scope.getPin = function(){
+                //pins = [];                
+
 				infowindow = new google.maps.InfoWindow({
 				    maxWidth: 500
 				    // position : new google.maps.LatLng(this.position.jb,this.position.kb),
@@ -137,201 +187,62 @@ vacationsApp.directive('drawMap', function () {
 
 					bgPositionX += 40;
 				}
+
+                
 				return pins;
 			};
 
 			scope.drawPin = function(){
 				var arrayPins = scope.getPin();
+
 				for(i = 0; i < arrayPins.length; i++){
-			        //console.log(pins[i]);
+			        //console.log(arrayPins[i]);
 			        arrayPins[i].setMap(map);
 			    }
 			}
             		
+            if(scope.user){
+                //console.log("scope.user");
+                google.maps.event.addDomListener(window, 'load', scope.initializeMap());
 
-			google.maps.event.addDomListener(window, 'load', scope.initializeMap());
-
-			scope.drawPin();
+                scope.drawPin();    
+            }
+            else{
+                //console.log("else scope.user");
+            }
+			
 
         }
     }
 });
 
 
-/*avengersApp.directive('listAvengers', function () {
-    return {
-        //se factory e controller baseado em angularFire, então: data-ng-repeat='actor in avengersList.avengers. Se baseado em angularFireCollection data-ng-repeat='actor in avengers'
-        restrict: "A",       
-        transclude: true, 
-        template:   "<div class='list-avengers'>"+
-                        //"<label>Busca</label>"+
-                        "<div class='form-group'>"+
-                            "<input class='form-control' type='text' data-ng-model='avengers.field' placeholder='Filtrar'>"+
-                        "</div>"+
-                        "<table class='table table-striped table-hover table-condensed'>"+
-                            "<thead>"+
-                                "<th>#</th>"+
-                                "<th>Ator</th>"+
-                                "<th>Personagem</th>"+
-                                "<th>Poder</th>"+
-                            "</thead>"+
-                            "<tbody>"+
-                                "<tr data-ng-repeat='actor in avengers.dataList | avengersFilter:avengers.field' data-ng-click='match({id:actor.id, name:actor.name, char:actor.character, rating:actor.rating, defRating:actor.defRating, index:$index, lastId:$last})' class=''>"+
-                                    "<td>{{$index}}</td>"+
-                                    "<td>{{actor.name}}</td>"+
-                                    "<td>{{actor.character}}</td>"+
-                                    "<td>{{actor.rating}}</td>"+
-                                "</tr>"+
-                            "</tbody>"+
-                        "</table>"+
-                        "<div ng-transclude></div>"+        
-                    "</div>",
-        link: function (scope, elem, attrs) {
-            var start = false,
-                field = angular.element(elem.find('input')),
-                autoC = angular.element(elem.find('.autocomplete')),
-                autoCList = angular.element(elem.find('ul'));
+vacationsApp.controller("NavCtrl", function($scope, $rootScope, $injector){
 
-            field.on('focus', function(){
-                autoCList.removeClass('closed');
-            });
+    //$rootScope.user = User.getUser();
+    $scope.menu = ["Atrações", "Roteiro"];
 
-            field.on('blur', function(){
-                if(!start){
-                    autoCList.addClass('closed');    
-                }                
-            });            
-
-            autoC.on('mouseleave', function(){
-                start = false;                
-            });
-
-            autoC.on('mouseover', function(){
-                start = true;                
-            });
-
-        }
-    }
-})*/
-
-
-
-
-//console.log($rootScope);
-
-//google.maps.event.addDomListener(window, 'load', initialize);
-
-
-/*
-avengersApp.controller("avengersCtrl", function($q, $timeout, $scope, $routeParams, fireFactory, avengersService){
-
-    var deferred = $q.defer();
-    var defer = $q.defer();
-
-    $scope.get = function(){        
-        defer.resolve(fireFactory.dataRef("heroes"));
-        return defer.promise;
-    }
-
-    $scope.get().then(function (returnedData) {
-        $scope.avengers = returnedData;
-    });
-
-    //$scope.avengers = fireFactory.dataRef("heroes");
-    console.log($scope);
-
-    $scope.add = function(param){        
-        if((param.data.name != "") && (param.data.char != "")){            
-            avengersService.add(param);    
-
-            $scope.alert.success = {message: "Adicionado!", field: param.data.name};
-            $timeout(function() {
-                deferred.resolve($scope.alert = {});                
-            }, 3000);
-            deferred.promise;
-        }
-        else{
-            $scope.alert.error = {message: "Preencha o campo Ator e o campo Personagem!"};        
-            $timeout(function() {
-                deferred.resolve($scope.alert = {});                
-            }, 3000);
-            deferred.promise;   
-        }        
-    }
-    $scope.clear = function(param){
-        avengersService.clear(param);
-    }
-    $scope.edit = function(param){
-        if(param.data.$selected !== undefined){            
-            avengersService.edit(param);
-            $scope.alert.success = {message: "Editado!", field: param.data.name};        
-            $timeout(function() {
-                deferred.resolve($scope.alert = {});                
-            }, 3000);
-            deferred.promise;   
-        }
-        else{            
-            $scope.alert.error = {message: "Selecione um personagem pra editar!"};        
-            $timeout(function() {
-                deferred.resolve($scope.alert = {});                
-            }, 3000);
-            deferred.promise;   
-        }
-    }
-    $scope.match = function(actor){
-        avengersService.match(actor, $scope.avengers);                
-    }
-    $scope.delete = function(param){        
-        if(param.data.$selected == true){            
-            console.log(param.data.name);
-            avengersService.delete(param);                
-            $scope.alert.success = {message: "Deletado!", field: param.data.name};        
-            $timeout(function() {
-                deferred.resolve($scope.alert = {});                
-            }, 3000);
-            deferred.promise;   
-        }
-        else{
-            $scope.alert.error = {message: "Selecione um personagem pra deletar!"};        
-            $timeout(function() {
-                deferred.resolve($scope.alert = {});                
-            }, 3000);
-            deferred.promise;   
-        }        
-    }
-
-})
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*avengersApp.controller("headerCtrl", function($scope, $rootScope, $location){
-    $scope.setMaster = function(section) {
-        $rootScope.selected = section;
+    $scope.setPage = function(section) {
+        $scope.selected = section;
+        //alert($scope.selected);
     }
 
     $scope.isSelected = function(section) {
-        return $rootScope.selected === section;
+        return $scope.selected === section;
     }
 
-    console.log($rootScope);
-    $scope.setMaster($location.path().substring(1, $location.path().length));
+    console.log($scope.dataList);
+    
+    
 
-})
-*/
+    // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    // console.log($rootScope.user);
+    // console.log($scope.user);
+    // console.log($scope);
+    // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+    
+});
 
 // vacationsApp.controller("MapCtrl", function($scope){
 // 	angular.extend($scope, {
