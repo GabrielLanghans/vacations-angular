@@ -18,9 +18,9 @@
 	<div data-draw-map></div>
 
 
-    <div data-ng-controller="NavCtrl">
-        <ul>
-            <li data-ng-repeat="item in menu" data-ng-click="setPage(item)" data-ng-class="{active : isSelected(item)}">{{item}}</li>
+    <div class="container" data-ng-controller="NavCtrl">
+        <ul class="nav nav-tabs">
+            <li data-ng-repeat="item in menu" data-ng-click="setPage(item)" data-ng-class="{active : isSelected(item)}"><a href="javascript:void(0);">{{item}}</a></li>
         </ul>
 
         <!-- {{selected}} -->
@@ -31,24 +31,54 @@
             </div> -->
             <div id="attractions" ng-switch-when="Atrações" data-ng-controller="AttractionsCtrl">
                 <h2>Atrações</h2>
-                <table>
+                <table class="table table-striped table-hover table-condensed">
                     <thead>
                         <tr>
                             <th>Nome</th>
+                            <th>Editar</th>
+                            <th>Remover</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr data-ng-repeat="place in dataList">
-                            <td><a href="javascript:void(0);" title="Informações">{{place.name}}</a></td>
-                            <td><button type="button" data-ng-click="edit(place.id)">Editar</button></td>
-                            <td><button type="button" data-ng-click="delete(place.id)">Remover</button></td>
+                            <td>{{place.name}}</td>
+                            <td><button class="btn btn-default btn-xs" type="button" data-ng-click="edit({id:place.id, position:place.position, name:place.name, address:place.address, url:place.url})">Editar</button></td>
+                            <td><button class="btn btn-danger btn-xs" type="button" data-ng-click="delete(place.id)">Remover</button></td>
                         </tr>
                     </tbody>
                 </table>
-                <button type="button" data-ng-click="new()">Novo</button>
-                bbb
+                <button data-ng-hide="dataPlace.$show" class="btn btn-primary pull-right" type="button" data-ng-click="new()">Novo</button>
+                
+                <div class="form-places" data-ng-show="dataPlace.$show">
+                    <form name="formPlace">
+                        <div class="form-group" data-ng-class="{error: formPlace.name.$invalid && formPlace.name.$dirty}">
+
+                            <!-- {show: false, position: "", id: "", name: "", address: "", url: ""}; -->
+
+                            <label class="control-label">Nome</label>
+                            <input class="form-control" type="text" name="name" value="{{dataPlace.name}}" data-ng-model="dataPlace.name" required>
+                        </div>
+                        <div class="form-group" data-ng-class="{error: formPlace.address.$invalid && formPlace.address.$dirty}">
+                            <label class="control-label">Endereço</label>
+                            <input class="form-control" type="text" name="address" value="{{dataPlace.address}}" data-ng-model="dataPlace.address" required>
+                        </div>
+                        <div class="form-group" data-ng-class="{error: formPlace.position.$invalid && formPlace.position.$dirty}">
+                            <label class="control-label">Position</label>
+                            <input class="form-control" type="text" name="position" value="{{dataPlace.position}}" data-ng-model="dataPlace.position" required>
+                        </div>
+                        <div class="form-group" data-ng-class="{error: formPlace.url.$invalid && formPlace.url.$dirty}">
+                            <label class="control-label">Url</label>
+                            <input class="form-control" type="text" name="url" value="{{dataPlace.url}}" data-ng-model="dataPlace.url">
+                        </div>
+
+                        <button class="btn btn-primary" type="button" data-ng-show="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitEdit({id:dataPlace.id, position:dataPlace.position, name:dataPlace.name, address:dataPlace.address, url:dataPlace.url})">Editar</button>
+                        <button class="btn btn-primary" type="button" data-ng-hide="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitNew({id:dataPlace.id, position:dataPlace.position, name:dataPlace.name, address:dataPlace.address, url:dataPlace.url})">Salvar</button>
+                    </form>
+                </div>
+
             </div>
-            <div id="attractions" ng-switch-when="Roteiro">
+
+            <div id="guide" ng-switch-when="Roteiro">
                 ccc
             </div>
         </div>

@@ -161,4 +161,4 @@ body{-webkit-backface-visibility:hidden;}
 .animated.lightSpeedOut{-webkit-animation-duration:0.25s;-moz-animation-duration:0.25s;-o-animation-duration:0.25s;animation-duration:0.25s;}
 .centered{margin:0 auto;}
 .hidden-text{text-indent:-9999px;}
-@keyframes fakeSelect{0%{top:13px;} 50%{top:15px;} 100%{top:13px;}}@-webkit-keyframes fakeSelect{0%{top:13px;} 50%{top:15px;} 100%{top:13px;}}@media screen{html,body{margin:0;padding:0;} #container-map{height:700px;}}
+@keyframes fakeSelect{0%{top:13px;} 50%{top:15px;} 100%{top:13px;}}@-webkit-keyframes fakeSelect{0%{top:13px;} 50%{top:15px;} 100%{top:13px;}}@media screen{html,body{margin:0;padding:0;} #header:before,#header:after{content:" ";display:table;} #header:after{clear:both;} #header{*zoom:1;} #container-map{height:700px;}}

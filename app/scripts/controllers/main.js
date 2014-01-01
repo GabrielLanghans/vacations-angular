@@ -297,7 +297,14 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     //$rootScope.user = User.getUser();
 
+    $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+
+    //{"position":"51.50134,-0.141883", "id":"-C1hOuUqwertyuiopasa", "name":"Buckingham Palace", "address":"London SW1A 1AA, Reino Unido", "url":"http://www.royal.gov.uk/theroyalresidences/buckinghampalace/buckinghampalace.aspx"}
     
+
+    //FALTA CONFIGURAR O AUTH NA FIREBASE PARA PERMITIR A EDIÇÃO APENAS QUANDO O USUÁRIO CORRETO ESTIVER LOGADO. TALVEZ SÓ PERMITIR LEITURA NESSAS CONDIÇÕES TAMBÉM
+
+
     $scope.delete = function(id) {
         var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/"+ id);
         idRef.remove(function(){
@@ -309,6 +316,44 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     }
 
+    $scope.edit = function(ref) {
+        $scope.dataPlace = {$show: true, $edit: true, position: ref.position, id: ref.id, name: ref.name, address: ref.address, url: ref.url};
+    }
+
+    $scope.submitEdit = function(ref) {   
+        console.log(ref);
+        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/"+ ref.id);
+        /*idRef.remove(function(){
+            $rootScope.drawPin();
+        });*/        
+        placeRef.child('position').set(ref.position);
+        placeRef.child('name').set(ref.name);
+        placeRef.child('address').set(ref.address);
+        placeRef.child('url').set(ref.url);
+        // FALTA ATUALIZAR OS PINS NO CALLBACK DE INSERIR
+
+        //CÓDIGO ABAIXO TAMBÉM DEVE IR NO CALLBACK DE INSERIR
+        $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+    }
+
+    $scope.new = function() {
+        $scope.dataPlace = {$show: true, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+    }
+
+    $scope.submitNew = function(ref) {   
+        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places");
+        var newPushRef = placeRef.push();
+
+        newPushRef.set({position: ref.position, id: newPushRef.name(), name: ref.name, address: ref.address, url: ref.url}, function(){
+            console.log("Adicionado!!!")
+            $rootScope.drawPin();            
+        });
+
+        $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+    }
+
+    
+
     /*
     evento para quando remove  um filho. Não funcionou muito bem pois não dispara a primeira vez. Fiz algo errado?
     var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/");
@@ -319,6 +364,15 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
       $rootScope.drawPin();
     });
     */
+
+    var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/");
+    placesRef.on('child_changed', function(snapshot) {
+      //var userName = snapshot.name(), userData = snapshot.val();
+      //alert('User ' + userName + ' has left the chat.');
+      console.log("Editado. Atualizando os pins!");
+      $rootScope.drawPin();
+    });
+
     console.log($scope)
 
 
