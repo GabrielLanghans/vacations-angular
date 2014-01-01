@@ -29,7 +29,7 @@
             <!-- <div id="attractions" ng-switch-default>
                 aaa
             </div> -->
-            <div id="attractions" ng-switch-when="Atrações">
+            <div id="attractions" ng-switch-when="Atrações" data-ng-controller="AttractionsCtrl">
                 <h2>Atrações</h2>
                 <table>
                     <thead>
@@ -40,12 +40,12 @@
                     <tbody>
                         <tr data-ng-repeat="place in dataList">
                             <td><a href="javascript:void(0);" title="Informações">{{place.name}}</a></td>
-                            <td><button type="button">Editar</button></td>
-                            <td><button type="button">Remover</button></td>
+                            <td><button type="button" data-ng-click="edit(place.id)">Editar</button></td>
+                            <td><button type="button" data-ng-click="delete(place.id)">Remover</button></td>
                         </tr>
                     </tbody>
                 </table>
-                <button type="button">Novo</button>
+                <button type="button" data-ng-click="new()">Novo</button>
                 bbb
             </div>
             <div id="attractions" ng-switch-when="Roteiro">

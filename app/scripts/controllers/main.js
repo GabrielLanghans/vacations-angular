@@ -86,6 +86,7 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
     $rootScope.user = User.getUser();
     $scope.user = User.getUser();
     $scope.markers = [];
+    //$scope.dataList = [];
 
     // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
     // console.log($rootScope.user);
@@ -95,11 +96,20 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 
     var i;
 
-    for(i=0; i<$scope.dataList.length; i++){
+    console.log($scope.dataList);
+    console.log($scope.dataList["-A1hOuUqwertyuiopasa"]);
+
+    /*for(i=0; i<$scope.dataList.length; i++){
         console.log($scope.dataList[i]);
         $scope.markers.push($scope.dataList[i]);            
         //console.log($scope.dataList[i]);
-    }
+    }*/
+
+    // for (i in $scope.dataList){
+    //     console.log($scope.dataList[i]);
+    //     $scope.markers.push($scope.dataList[i]);            
+    //     //console.log($scope.dataList[i]);
+    // }
 
     // console.log($scope);
     // console.log($rootScope);
@@ -108,12 +118,15 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 
 	$scope.options = {
 	    zoom: 10,
-	    centerLat: $scope.markers[$scope.markers.length-1].position.split(",")[0],
-	    centerLong: $scope.markers[$scope.markers.length-1].position.split(",")[1],	    
+        //centerLat: $scope.markers[$scope.markers.length-1].position.split(",")[0],
+	    centerLat: "51.5227504",
+        //centerLong: $scope.markers[$scope.markers.length-1].position.split(",")[1],     
+	    centerLong: "-0.15506379999999353",	    
 	    minZoom: 7,    
 	    rotateControl: false,
 	    streetViewControl: false	    
 	}
+    
 });
 
 // function startWatch($scope) {
@@ -125,7 +138,7 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 // }
 
 
-vacationsApp.directive('drawMap', function () {
+vacationsApp.directive('drawMap', function ($rootScope) {
 	return {
         restrict: "A",       
         replace: true, 
@@ -140,6 +153,8 @@ vacationsApp.directive('drawMap', function () {
             	spritePinUrl = "../images/sprite_pin.png",
             	i;
 
+            
+
             scope.initializeMap = function(){
 				var mapOptions = {
 					zoom: scope.options.zoom,
@@ -153,8 +168,14 @@ vacationsApp.directive('drawMap', function () {
 			};
 
 			scope.getPin = function(){
-                //pins = [];                
+                //limpa os pins
+                for (var i = 0; i < pins.length; i++) {
+                    pins[i].setMap(null);
+                }
+                pins = [];
+                bgPositionX = 0;
 
+                //cria a tooltip do pin
 				infowindow = new google.maps.InfoWindow({
 				    maxWidth: 500
 				    // position : new google.maps.LatLng(this.position.jb,this.position.kb),
@@ -163,36 +184,62 @@ vacationsApp.directive('drawMap', function () {
 				});
 
                 
+                console.log("====== scope.dataList: =======");
+                console.log(scope.dataList);
+                console.log("====== scope.dataList/END =======");
+
+                for (i in scope.dataList){
+                    marker = new google.maps.Marker({
+                        position : new google.maps.LatLng(scope.dataList[i].position.split(",")[0], scope.dataList[i].position.split(",")[1]),
+                        map : map,
+                        pinId : scope.dataList[i].id,
+                        pinName : scope.dataList[i].name,
+                        pinAddress : scope.dataList[i].address,
+                        pinUrl : scope.dataList[i].url,
+                        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
+                        zIndex: 100
+                    });
+
+                    google.maps.event.addListener(marker, 'mouseover', function() {
+                        infowindow.close(); 
+                        infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
+                        infowindow.open(map, this); 
+                    });
+
+                    pins.push(marker);
+
+                    bgPositionX += 40;
+                }
 
 
-				for(i = 0; i < scope.markers.length; i++){
-					marker = new google.maps.Marker({
-				        position : new google.maps.LatLng(scope.markers[i].position.split(",")[0], scope.markers[i].position.split(",")[1]),
-				        map : map,
-				        pinId : scope.markers[i].id,
-				        pinName : scope.markers[i].name,
-				        pinAddress : scope.markers[i].address,
-				        pinUrl : scope.markers[i].url,
-				        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
-				        zIndex: 100
-				    });
+				// for(i = 0; i < scope.markers.length; i++){
+				// 	marker = new google.maps.Marker({
+				//         position : new google.maps.LatLng(scope.markers[i].position.split(",")[0], scope.markers[i].position.split(",")[1]),
+				//         map : map,
+				//         pinId : scope.markers[i].id,
+				//         pinName : scope.markers[i].name,
+				//         pinAddress : scope.markers[i].address,
+				//         pinUrl : scope.markers[i].url,
+				//         icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
+				//         zIndex: 100
+				//     });
 
-				    google.maps.event.addListener(marker, 'mouseover', function() {
-					    infowindow.close(); 
-					    infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-					    infowindow.open(map, this); 
-					});
+				//     google.maps.event.addListener(marker, 'mouseover', function() {
+				// 	    infowindow.close(); 
+				// 	    infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
+				// 	    infowindow.open(map, this); 
+				// 	});
 
-					pins.push(marker);
+				// 	pins.push(marker);
 
-					bgPositionX += 40;
-				}
+				// 	bgPositionX += 40;
+				// }
 
                 
 				return pins;
 			};
 
-			scope.drawPin = function(){
+			$rootScope.drawPin = function(){
 				var arrayPins = scope.getPin();
 
 				for(i = 0; i < arrayPins.length; i++){
@@ -205,19 +252,21 @@ vacationsApp.directive('drawMap', function () {
                 //console.log("scope.user");
                 google.maps.event.addDomListener(window, 'load', scope.initializeMap());
 
-                scope.drawPin();    
+                $rootScope.drawPin();
             }
             else{
                 //console.log("else scope.user");
             }
 			
+            console.log("$rootScope: ");
+            console.log($rootScope);
 
         }
     }
 });
 
 
-vacationsApp.controller("NavCtrl", function($scope, $rootScope, $injector){
+vacationsApp.controller("NavCtrl", function($scope, $rootScope){
 
     //$rootScope.user = User.getUser();
     $scope.menu = ["Atrações", "Roteiro"];
@@ -243,6 +292,40 @@ vacationsApp.controller("NavCtrl", function($scope, $rootScope, $injector){
 
     
 });
+
+vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFactory){
+
+    //$rootScope.user = User.getUser();
+
+    
+    $scope.delete = function(id) {
+        var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/"+ id);
+        idRef.remove(function(){
+            $rootScope.drawPin();
+        });
+        //this.reloadPin();
+
+        //alert(id);
+
+    }
+
+    /*
+    evento para quando remove  um filho. Não funcionou muito bem pois não dispara a primeira vez. Fiz algo errado?
+    var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/");
+    placesRef.on('child_removed', function(snapshot) {
+      //var userName = snapshot.name(), userData = snapshot.val();
+      //alert('User ' + userName + ' has left the chat.');
+      console.log("Removido. Atualizando os pins!");
+      $rootScope.drawPin();
+    });
+    */
+    console.log($scope)
+
+
+    
+});
+
+
 
 // vacationsApp.controller("MapCtrl", function($scope){
 // 	angular.extend($scope, {

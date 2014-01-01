@@ -15,7 +15,15 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) 
             return new Firebase(path);
         },
         dataRef: function(path) {
+            /*console.log("-- datalist inicial --");
+            console.log($rootScope.dataList);
+            console.log($rootScope.dataList.length);
             $rootScope.dataList = [];
+            console.log("-- datalist zerada --");
+            console.log($rootScope.dataList);
+            console.log($rootScope.dataList.length);
+            console.log("-- end --");
+            */
 
             path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;     
 
@@ -77,7 +85,7 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
             //$rootScope.dataList = [];
 
             if($rootScope.user){
-              if(!$rootScope.dataList.length){
+              /*if(!$rootScope.dataList.length){
                 // console.log("========== IF =============");
                 // console.log($rootScope.user);
                 // console.log("=======================");
@@ -87,6 +95,9 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
                 //console.log("========== ELSE =============");
                 return true;
               }
+              */
+              
+              return fireFactory.dataRef("users/" + $rootScope.user.uid + "/travels/0/places");  
               
             }
             else{
