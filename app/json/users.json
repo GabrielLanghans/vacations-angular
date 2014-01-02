@@ -1,29 +1,32 @@
 {
     "users":{
         "facebook:100002807237878":{
-            "uid": "facebook:100002807237878", "name": "Gabriel Langhans", "travels":[
-                {"date":"26/10/2013", "places":
-                    {
-                        "-A1hOuUqwertyuiopasa":{"position":"51.5034412,-0.119678199999953", "id":"-A1hOuUqwertyuiopasa", "name":"London Eye", "address":"Riverside Bldg, County Hall, Westminster Bridge Rd, London SE1 7PB, Reino Unido", "url":"http://www.londoneye.com/"},
-                        "-A2hOuUqwertyuiopasa":{"position":"51.5227504,-0.15506379999999353", "id":"-A2hOuUqwertyuiopasa", "name":"Museu Madame Tussauds", "address":"Marylebone Rd, London NW1 5LR, Reino Unido", "url":"http://www.madametussauds.com/"},
-                        "-A3hOuUqwertyuiopasa":{"position":"51.50134,-0.141883", "id":"-A3hOuUqwertyuiopasa", "name":"Buckingham Palace", "address":"London SW1A 1AA, Reino Unido", "url":"http://www.royal.gov.uk/theroyalresidences/buckinghampalace/buckinghampalace.aspx"}
+            "uid": "facebook:100002807237878", "name": "Gabriel Langhans", "travels":{
+                "-Z1hOuUqwertyuiopasa":{
+                    "id":"-Z1hOuUqwertyuiopasa", "date":"26/10/2013", "places":{
+                            "-A1hOuUqwertyuiopasa":{"position":"51.5034412,-0.119678199999953", "id":"-A1hOuUqwertyuiopasa", "name":"London Eye", "address":"Riverside Bldg, County Hall, Westminster Bridge Rd, London SE1 7PB, Reino Unido", "url":"http://www.londoneye.com/"},
+                            "-A2hOuUqwertyuiopasa":{"position":"51.5227504,-0.15506379999999353", "id":"-A2hOuUqwertyuiopasa", "name":"Museu Madame Tussauds", "address":"Marylebone Rd, London NW1 5LR, Reino Unido", "url":"http://www.madametussauds.com/"},
+                            "-A3hOuUqwertyuiopasa":{"position":"51.50134,-0.141883", "id":"-A3hOuUqwertyuiopasa", "name":"Buckingham Palace", "address":"London SW1A 1AA, Reino Unido", "url":"http://www.royal.gov.uk/theroyalresidences/buckinghampalace/buckinghampalace.aspx"},
+                            "-JCBCUQ9h8ejRbfXUaYn":{"address" : "Westminster, London SW1A 0AA, Reino Unido", "position" : "51.500152,-0.126236", "url" : "http://www.parliament.uk/bigben", "name" : "Big Ben", "id" : "-JCBCUQ9h8ejRbfXUaYn"}
+                        }
                     }
                 },
-                {"date":"05/03/2014", "places":
-                    {
+                "-Z2hOuUqwertyuiopasa":{
+                    "id":"-Z2hOuUqwertyuiopasa", "date":"05/03/2014", "places":{
                         "-B1hOuUqwertyuiopasa":{"position":"52.5034412,-0.219678199999953", "id":"-B1hOuUqwertyuiopasa", "name":"Teste03", "address":"Address03", "url":"http://google.com/"}
                     }
                 }
-            ]
+            }
         },
         "facebook:100007322078152":{
-            "uid": "facebook:100007322078152", "name": "Gabriel US", "travels":[
-                {"date":"10/01/2014", "places":
-                    {
+            "uid": "facebook:100007322078152", "name": "Gabriel US", "travels":{
+                "-Z3hOuUqwertyuiopasa":{
+                    "id":"-Z3hOuUqwertyuiopasa", "date":"10/01/2014", "places":{
                         "-C1hOuUqwertyuiopasa":{"position":"51.50134,-0.141883", "id":"-C1hOuUqwertyuiopasa", "name":"Buckingham Palace", "address":"London SW1A 1AA, Reino Unido", "url":"http://www.royal.gov.uk/theroyalresidences/buckinghampalace/buckinghampalace.aspx"}
+                        }
                     }
                 }
-            ]
+            }
         }
 
     }

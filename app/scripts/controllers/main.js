@@ -332,7 +332,6 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
         placeRef.child('url').set(ref.url);
         // FALTA ATUALIZAR OS PINS NO CALLBACK DE INSERIR
 
-        //CÓDIGO ABAIXO TAMBÉM DEVE IR NO CALLBACK DE INSERIR
         $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
     }
 
@@ -342,6 +341,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     $scope.submitNew = function(ref) {   
         var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places");
+        //var placeRef = fireFactory.firebaseRef("users/facebook:100007322078152/travels/0/places");
         var newPushRef = placeRef.push();
 
         newPushRef.set({position: ref.position, id: newPushRef.name(), name: ref.name, address: ref.address, url: ref.url}, function(){
