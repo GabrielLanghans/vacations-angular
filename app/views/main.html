@@ -71,8 +71,13 @@
                             <input class="form-control" type="text" name="url" value="{{dataPlace.url}}" data-ng-model="dataPlace.url">
                         </div>
 
-                        <button class="btn btn-primary" type="button" data-ng-show="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitEdit({id:dataPlace.id, position:dataPlace.position, name:dataPlace.name, address:dataPlace.address, url:dataPlace.url})">Editar</button>
-                        <button class="btn btn-primary" type="button" data-ng-hide="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitNew({id:dataPlace.id, position:dataPlace.position, name:dataPlace.name, address:dataPlace.address, url:dataPlace.url})">Salvar</button>
+                        <div class="pull-right">
+                            <button class="btn btn-default" type="button" data-ng-click="cancel()">Cancelar</button>        
+                            <button class="btn btn-primary" type="button" data-ng-show="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitEdit({id:dataPlace.id, position:dataPlace.position, name:dataPlace.name, address:dataPlace.address, url:dataPlace.url})">Editar</button>
+                            <button class="btn btn-primary" type="button" data-ng-hide="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitNew({id:dataPlace.id, position:dataPlace.position, name:dataPlace.name, address:dataPlace.address, url:dataPlace.url})">Salvar</button>                                
+                        </div>
+                        
+                        
                     </form>
                 </div>
 

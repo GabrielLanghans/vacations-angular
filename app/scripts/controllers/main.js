@@ -304,6 +304,9 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     //FALTA CONFIGURAR O AUTH NA FIREBASE PARA PERMITIR A EDIÇÃO APENAS QUANDO O USUÁRIO CORRETO ESTIVER LOGADO. TALVEZ SÓ PERMITIR LEITURA NESSAS CONDIÇÕES TAMBÉM
 
+    $scope.cancel = function() {
+        $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+    }
 
     $scope.delete = function(id) {
         var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/"+ id);
