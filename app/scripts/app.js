@@ -14,30 +14,11 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) 
             path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;
             return new Firebase(path);
         },
-        dataRef: function(path) {
-            /*console.log("-- datalist inicial --");
-            console.log($rootScope.dataList);
-            console.log($rootScope.dataList.length);
-            $rootScope.dataList = [];
-            console.log("-- datalist zerada --");
-            console.log($rootScope.dataList);
-            console.log($rootScope.dataList.length);
-            console.log("-- end --");
-            */
-
+        dataRef: function(path) {            
             path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;     
 
             var ref = new Firebase(path);
-
             var promise = angularFire(ref, $rootScope, "dataList");
-
-            
-
-            /*promise.then(function(){
-                console.log($rootScope);
-                console.log($rootScope.dataList);
-                return $rootScope.dataList;      
-            });*/
 
             return promise;
         }
@@ -48,72 +29,33 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) 
 vacationsApp.config(function ($routeProvider, $locationProvider) {
     $routeProvider
       .when('/', {
-        templateUrl: 'views/login.html',
+        templateUrl: 'views/home.html',
         resolve: {
-          /*dataLoad: function(fireFactory) {            
-            return fireFactory.dataRef("users/-J5hOuUsRGBpAG_rhWVr/travels/0/places");
-          }*/
-          loadLogin: function($route, $rootScope, $location){
-
-            
-
+          verifyAuth: function($route, $rootScope, $location){
             if($rootScope.user){
-              // console.log("=======================");
-              // console.log($rootScope.user);
-              // console.log("=======================");
-
+              console.log($rootScope.user);
               $location.path('/home');
               //redirectTo: '/';
-            }
-            else{
-              // console.log("=======================");
-              // console.log("user vazio: "+ $rootScope.user);
-              // console.log("=======================");
-            }
-            
+            }            
           }
         }
-        //controller: 'MapCtrl'
       })
+
       .when('/home', {
-        templateUrl: 'views/main.html',
+        templateUrl: 'views/home-auth.html',
         resolve: {
           dataLoad: function($route, fireFactory, $rootScope, $location) {    
-
-            
-
-            //$rootScope.dataList = [];
-
-            if($rootScope.user){
-              /*if(!$rootScope.dataList.length){
-                // console.log("========== IF =============");
-                // console.log($rootScope.user);
-                // console.log("=======================");
-                return fireFactory.dataRef("users/" + $rootScope.user.uid + "/travels/0/places");  
-              }
-              else{
-                //console.log("========== ELSE =============");
-                return true;
-              }
-              */
-              
-              return fireFactory.dataRef("users/" + $rootScope.user.uid + "/travels/0/places");  
+            if($rootScope.user){              
+              return fireFactory.dataRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places");  
               //return fireFactory.dataRef("users/facebook:100007322078152/travels/0/places");  
-              
             }
             else{
-              // console.log("=======================");
-              // console.log("user vazio: "+ $rootScope.user);
-              // console.log("=======================");
-
               return $location.path("/");
             }
-            
-
           }
         }
-        //controller: 'MapCtrl'
       })  
+
       .otherwise({
         redirectTo: '/'
       });

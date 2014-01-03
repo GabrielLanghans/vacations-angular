@@ -35,6 +35,12 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
     //$rootScope.user = userService;
 
+    /*$scope.home = function() {
+        console.log(1);
+        $location.path("/home");        
+        console.log(2);
+    }*/
+
     var auth = new FirebaseSimpleLogin(fireFactory.firebaseRef(), function(error, user) {
         if (error) {
             User.setUser(error);
@@ -56,7 +62,21 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             console.log($scope.user);
             console.log("=======================");
 
-            $location.path("/home");
+
+            var userRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid);
+            userRef.on('value', function(snapshot) {
+                if(snapshot.val() == null){
+                    alert('Vazio. Usuário não existe na base! Criar usuário na firebase!');
+                    //console.log(snapshot.val());
+                }
+                else{
+                    $rootScope.$apply(function() {
+                        // console.log("usuario existente: ");
+                        // console.log(snapshot.val());
+                        $location.path("/home");
+                    });
+                }
+            });
 
             //$location.search('user',$rootScope.user.uid).path('/home');
 
@@ -309,13 +329,15 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     }
 
     $scope.delete = function(id) {
-        var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/"+ id);
+        var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/"+ id);
         idRef.remove(function(){
             $rootScope.drawPin();
         });
         //this.reloadPin();
 
         //alert(id);
+
+        this.cancel();
 
     }
 
@@ -325,7 +347,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     $scope.submitEdit = function(ref) {   
         console.log(ref);
-        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/"+ ref.id);
+        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/"+ ref.id);
         /*idRef.remove(function(){
             $rootScope.drawPin();
         });*/        
@@ -335,7 +357,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
         placeRef.child('url').set(ref.url);
         // FALTA ATUALIZAR OS PINS NO CALLBACK DE INSERIR
 
-        $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+        this.cancel();
     }
 
     $scope.new = function() {
@@ -343,7 +365,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     }
 
     $scope.submitNew = function(ref) {   
-        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places");
+        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places");
         //var placeRef = fireFactory.firebaseRef("users/facebook:100007322078152/travels/0/places");
         var newPushRef = placeRef.push();
 
@@ -352,13 +374,13 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
             $rootScope.drawPin();            
         });
 
-        $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+        this.cancel();
     }
 
     
 
     /*
-    evento para quando remove  um filho. Não funcionou muito bem pois não dispara a primeira vez. Fiz algo errado?
+    evento para quando remove  um filho. Não funcionou muito bem pois não dispara a primeira vez. Fiz algo errado? TALVEZ DENTRO DE $rootScope.$apply(function() { FUNCIONE ;)
     var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/");
     placesRef.on('child_removed', function(snapshot) {
       //var userName = snapshot.name(), userData = snapshot.val();
@@ -368,7 +390,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     });
     */
 
-    var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/");
+    var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/");
     placesRef.on('child_changed', function(snapshot) {
       //var userName = snapshot.name(), userData = snapshot.val();
       //alert('User ' + userName + ' has left the chat.');

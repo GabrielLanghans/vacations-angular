@@ -1,4 +1,4 @@
-vacationsApp.controller("LoginCtrl", function($scope, $rootScope, $location, User){
+vacationsApp.controller("HomeCtrl", function($scope, $rootScope, $location, User){
 
 
     //$rootScope.user = userService;
