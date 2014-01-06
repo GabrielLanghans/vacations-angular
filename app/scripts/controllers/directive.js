@@ -102,7 +102,7 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
             $location.path('/');
         }
-        $scope.$apply();
+        //$scope.$apply();
     });
 
     $scope.login = function(){
@@ -170,15 +170,21 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 // }
 
 
-vacationsApp.directive('drawMap', function ($rootScope) {
+vacationsApp.directive('drawMap', function ($rootScope, Markers) {
 	return {
         restrict: "A",       
         replace: true, 
-    	template:   '<div id="container-map"></div>',
+    	template:   "<div id='map-directive'>"+
+                        "<div id='container-map'></div>"+
+                        "<div id='list'>"+
+                            "<span data-ng-repeat='teste in dataList' class='teste' data-att='{{teste}}'>{{teste}}</span>"+
+                        "</div>"+
+                    "</div>",
         
         link: function (scope, elem, attrs) {
-            var map,
-            	marker,
+            /*var map,
+                marker,*/
+            var marker,
             	infowindow,
             	pins = [],
             	bgPositionX = 0,
@@ -196,10 +202,11 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 					streetViewControl: scope.options.streetViewControl
 				};
 
-				map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+                //map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+                Markers.setMap('container-map', mapOptions);				
 			};
 
-			scope.getPin = function(){
+			$rootScope.getPin = function(){
                 //limpa os pins
                 for (var i = 0; i < pins.length; i++) {
                     pins[i].setMap(null);
@@ -220,10 +227,10 @@ vacationsApp.directive('drawMap', function ($rootScope) {
                 console.log(scope.dataList);
                 console.log("====== scope.dataList/END =======");
 
-                for (i in scope.dataList){
+                /*for (i in scope.dataList){
                     marker = new google.maps.Marker({
                         position : new google.maps.LatLng(scope.dataList[i].position.split(",")[0], scope.dataList[i].position.split(",")[1]),
-                        map : map,
+                        map : Markers.getMap(),
                         pinId : scope.dataList[i].id,
                         pinName : scope.dataList[i].name,
                         pinAddress : scope.dataList[i].address,
@@ -235,7 +242,41 @@ vacationsApp.directive('drawMap', function ($rootScope) {
                     google.maps.event.addListener(marker, 'mouseover', function() {
                         infowindow.close(); 
                         infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-                        infowindow.open(map, this); 
+                        infowindow.open(Markers.getMap(), this); 
+                    });
+
+                    pins.push(marker);
+
+                    bgPositionX += 40;
+                }*/
+
+                var el = angular.element(elem);
+
+                console.log("el");
+                console.log(el);
+                console.log(el.find("span")[1].attrs);
+                console.log(el.children()[1].children.length);
+
+                for (var j = 0; j < el.children()[1].children.length; J++){
+
+                    console.log(el.children()[1].children[j]);
+                    console.log(el.children()[1].children[j].attrs());
+
+                    marker = new google.maps.Marker({
+                        position : new google.maps.LatLng(elem.children()[1].children[j].position.split(",")[0], elem.children()[1].children[j].position.split(",")[1]),
+                        map : Markers.getMap(),
+                        pinId : elem.children()[1].children[j].id,
+                        pinName : elem.children()[1].children[j].name,
+                        pinAddress : elem.children()[1].children[j].address,
+                        pinUrl : elem.children()[1].children[j].url,
+                        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
+                        zIndex: 100
+                    });
+
+                    google.maps.event.addListener(marker, 'mouseover', function() {
+                        infowindow.close(); 
+                        infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
+                        infowindow.open(Markers.getMap(), this); 
                     });
 
                     pins.push(marker);
@@ -276,7 +317,7 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 
 				for(i = 0; i < arrayPins.length; i++){
 			        //console.log(arrayPins[i]);
-			        arrayPins[i].setMap(map);
+			        arrayPins[i].setMap(Markers.getMap());
 			    }
 			}
             		
@@ -284,11 +325,25 @@ vacationsApp.directive('drawMap', function ($rootScope) {
                 //console.log("scope.user");
                 google.maps.event.addDomListener(window, 'load', scope.initializeMap());
 
-                $rootScope.drawPin();
+                //$rootScope.drawPin();
+
+                /*scope.$watch(scope.dataList, function() {
+                    var arrayPins = scope.getPin();
+
+                    for(i = 0; i < arrayPins.length; i++){
+                        //console.log(arrayPins[i]);
+                        arrayPins[i].setMap(Markers.getMap());
+                    }   
+                }, true);
+                */
+
+
             }
             else{
                 //console.log("else scope.user");
             }
+
+
 			
             console.log("$rootScope: ");
             console.log($rootScope);
@@ -325,11 +380,54 @@ vacationsApp.controller("NavCtrl", function($scope, $rootScope){
     
 });
 
-vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFactory){
+
+vacationsApp.factory('Markers', function ($rootScope) {
+    var map;
+
+    return {
+        getMap:function(){
+            return map;
+        },
+        setMap:function(container, options){            
+            map = new google.maps.Map(document.getElementById(container), options);
+        },
+        reloadPins:function (map) {
+            alert("oi")
+            $rootScope.$watch($rootScope.dataList, function() {
+                var arrayPins = $rootScope.getPin(),
+                    i;
+
+                for(i = 0; i < arrayPins.length; i++){
+                    //console.log(arrayPins[i]);
+                    arrayPins[i].setMap(this.getMap());
+                }   
+            }, true);
+        }
+    };
+});
+
+
+vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFactory, Markers, $timeout){
 
     //$rootScope.user = User.getUser();
 
     $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+
+    //Markers.reloadPins(Markers.getMap());
+
+
+    /*$rootScope.$watch($rootScope.dataList, function() {
+        alert("watch!!");
+        var arrayPins = $rootScope.getPin(),
+            i;
+
+        for(i = 0; i < arrayPins.length; i++){
+            //console.log(arrayPins[i]);
+            arrayPins[i].setMap(Markers.getMap());
+        }   
+    });*/
+
+
 
     //{"position":"51.50134,-0.141883", "id":"-C1hOuUqwertyuiopasa", "name":"Buckingham Palace", "address":"London SW1A 1AA, Reino Unido", "url":"http://www.royal.gov.uk/theroyalresidences/buckinghampalace/buckinghampalace.aspx"}
     
@@ -343,7 +441,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     $scope.delete = function(id) {
         var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/"+ id);
         idRef.remove(function(){
-            $rootScope.drawPin();
+            //$rootScope.drawPin();
         });
         //this.reloadPin();
 
@@ -367,13 +465,6 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
         placeRef.child('name').set(ref.name);
         placeRef.child('address').set(ref.address);
         placeRef.child('url').set(ref.url);
-        
-
-        /*placeRef.set({position: ref.position, name: ref.name, address: ref.address, url: ref.url}, function(){
-            console.log("Editado!!!")
-            $rootScope.drawPin();            
-        });*/
-
         // FALTA ATUALIZAR OS PINS NO CALLBACK DE INSERIR
 
         this.cancel();
@@ -390,10 +481,15 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
         newPushRef.set({position: ref.position, id: newPushRef.name(), name: ref.name, address: ref.address, url: ref.url}, function(){
             console.log("Adicionado!!!")
-            $rootScope.drawPin();            
+            //$rootScope.drawPin();            
         });
 
         this.cancel();
+
+        console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        console.log($rootScope.dataList);
+        console.log($scope.dataList);
+        console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
     }
 
     
@@ -409,20 +505,50 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     });
     */
 
-    /*var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/");
-    placesRef.on('child_changed', function(snapshot) {
-      //var userName = snapshot.name(), userData = snapshot.val();
-      //alert('User ' + userName + ' has left the chat.');
-      //$rootScope.$apply(function() {
-            alert("oioiioioi");
+    
+        var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/");
+        placesRef.on('child_chenged', function(snapshot) {
+          //var userName = snapshot.name(), userData = snapshot.val();
+          //alert('User ' + userName + ' has left the chat.');
           console.log("Editado. Atualizando os pins!");
 
-          $rootScope.drawPin();
-      //});
-    });*/
+          $rootScope.$apply(function() {
+            alert("oioioi");
+                $rootScope.drawPin();
+            });
+
+
+          
+            /*alert("watch!!");
+            var arrayPins = $rootScope.getPin(),
+                i;
+
+        
+                for(i = 0; i < arrayPins.length; i++){
+                    console.log(arrayPins[i]);
+                    arrayPins[i].setMap(Markers.getMap());
+                }   
+            */
+                
+        
+
+        });
+    
 
     console.log($scope)
 
+
+
+    /*$rootScope.$watch($rootScope.dataList, function() {
+        alert("watch!!");
+        var arrayPins = $rootScope.getPin(),
+            i;
+
+        for(i = 0; i < arrayPins.length; i++){
+            //console.log(arrayPins[i]);
+            arrayPins[i].setMap(Markers.getMap());
+        }   
+    });*/
 
     
 });
