@@ -363,16 +363,16 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
         /*idRef.remove(function(){
             $rootScope.drawPin();
         });*/        
-        placeRef.child('position').set(ref.position);
+        /*placeRef.child('position').set(ref.position);
         placeRef.child('name').set(ref.name);
         placeRef.child('address').set(ref.address);
         placeRef.child('url').set(ref.url);
-        
+        */
 
-        /*placeRef.set({position: ref.position, name: ref.name, address: ref.address, url: ref.url}, function(){
+        placeRef.update({position: ref.position, name: ref.name, address: ref.address, url: ref.url}, function(){
             console.log("Editado!!!")
             $rootScope.drawPin();            
-        });*/
+        });
 
         // FALTA ATUALIZAR OS PINS NO CALLBACK DE INSERIR
 
