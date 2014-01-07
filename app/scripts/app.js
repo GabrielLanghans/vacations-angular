@@ -46,7 +46,9 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
         resolve: {
           dataLoad: function($route, fireFactory, $rootScope, $location) {    
             if($rootScope.user){              
-              return fireFactory.dataRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places");  
+              return fireFactory.dataRef("users/" + $rootScope.user.uid);  
+              //return fireFactory.dataRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places");  
+
               //return fireFactory.dataRef("users/facebook:100007322078152/travels/0/places");  
             }
             else{

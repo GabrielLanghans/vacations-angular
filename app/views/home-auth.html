@@ -42,7 +42,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr data-ng-repeat="place in dataList">
+                        <tr data-ng-repeat="place in dataList.travels['-Z1hOuUqwertyuiopasa'].places">
+                            <!-- <td>{{place}}</td> -->
                             <td>{{$index}}</td>
                             <td>{{place.name}}</td>
                             <td><button class="btn btn-default btn-xs" type="button" data-ng-click="edit({id:place.id, position:place.position, name:place.name, address:place.address, url:place.url})">Editar</button></td>

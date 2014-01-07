@@ -101,9 +101,24 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
 vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams, User){
 
+    $scope.travel = [];
+
+    console.log($scope.dataList.travels['-Z1hOuUqwertyuiopasa']);
+
+    /*for (i in $scope.dataList.travels){
+        console.log($scope.dataList.travels[i]);        
+        $scope.travel.push($scope.dataList.travels[i]);
+    }    
+    console.log($scope.travel[0].places);
+    */
+
     $rootScope.user = User.getUser();
     $scope.user = User.getUser();
-    $scope.markers = [];
+
+    
+    //$scope."/travels/-Z1hOuUqwertyuiopasa/places";
+
+    //$scope.markers = [];
     $scope.route = {type: "TRANSIT", origin: false, destination: false};
     //$scope.dataList = [];
 
@@ -115,8 +130,8 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 
     var i;
 
-    console.log($scope.dataList);
-    console.log($scope.dataList["-A1hOuUqwertyuiopasa"]);
+    // console.log($scope.dataList);
+    // console.log($scope.dataList["-A1hOuUqwertyuiopasa"]);
 
     /*for(i=0; i<$scope.dataList.length; i++){
         console.log($scope.dataList[i]);
@@ -215,14 +230,14 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 				});
                 
 
-                for (i in scope.dataList){
+                for (i in scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places){
                     marker = new google.maps.Marker({
-                        position : new google.maps.LatLng(scope.dataList[i].position.split(",")[0], scope.dataList[i].position.split(",")[1]),
+                        position : new google.maps.LatLng(scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].position.split(",")[0], scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].position.split(",")[1]),
                         map : map,
-                        pinId : scope.dataList[i].id,
-                        pinName : scope.dataList[i].name,
-                        pinAddress : scope.dataList[i].address,
-                        pinUrl : scope.dataList[i].url,
+                        pinId : scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].id,
+                        pinName : scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].name,
+                        pinAddress : scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].address,
+                        pinUrl : scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].url,
                         icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
                         zIndex: 100
                     });
@@ -388,6 +403,8 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
         $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
     }
 
+    //$rootScope.travel[0].id
+
     $scope.delete = function(id) {
         var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/"+ id);
         idRef.remove(function(){
@@ -432,7 +449,11 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     }
 
     $scope.submitNew = function(ref) {   
+        console.log($scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places);
+
         var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places");
+        //var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $rootScope.travel[0].id +"/places");
+
         //var placeRef = fireFactory.firebaseRef("users/facebook:100007322078152/travels/-Z3hOuUqwertyuiopasa/places");
         var newPushRef = placeRef.push();
 
