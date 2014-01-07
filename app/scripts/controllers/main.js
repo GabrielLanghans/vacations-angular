@@ -1,19 +1,5 @@
 'use strict';
 
-
-// ALTERNATIVAS:
-/*
-- carregar os dados da firebase no routeprovider (como esta sendo feito hj) e depois só ler os dados do usuario logado na directive
-
-- apenas carregar os dados após logado e talvez apenas do usuário que se logou.
-
-- de qualquer forma, para salvar os dados a permissão só será concedida se o user for correto.
-
-
-
-*/
-
-
 vacationsApp.factory('User', function ($rootScope) {
     var userResponse = [];
 
@@ -118,6 +104,7 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
     $rootScope.user = User.getUser();
     $scope.user = User.getUser();
     $scope.markers = [];
+    $scope.route = {type: "TRANSIT", origin: false, destination: false};
     //$scope.dataList = [];
 
     // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -161,20 +148,26 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
     
 });
 
-// function startWatch($scope) {
-//     $scope.addMarker = function() {
-//         console.log($scope.newMarker);
-//         $scope.markers.push($scope.newMarker);
-//         $scope.newMarker = '';
-//     }
-// }
-
 
 vacationsApp.directive('drawMap', function ($rootScope) {
 	return {
         restrict: "A",       
         replace: true, 
-    	template:   '<div id="container-map"></div>',
+        template:   '<div>'+
+                        '<div id="container-map"></div>'+
+                        '<div id="directions-panel"></div>'+                        
+                        '<select id="mode" data-ng-model="route.type">'+
+                            '<option value="DRIVING">Driving</option>'+
+                            '<option value="WALKING">Walking</option>'+
+                            '<option value="BICYCLING">Bicycling</option>'+
+                            '<option value="TRANSIT">Transit</option>'+
+                        '</select>'+
+                        // '<button data-ng-click="calcRoute()">Calc Route</button>'+
+                        // '<button data-ng-click="removeRoute()">Remove Route</button>'+
+                    '</div>',
+
+
+        
         
         link: function (scope, elem, attrs) {
             var map,
@@ -182,8 +175,13 @@ vacationsApp.directive('drawMap', function ($rootScope) {
             	infowindow,
             	pins = [],
             	bgPositionX = 0,
-            	spritePinUrl = "../images/sprite_pin.png",
+                spritePinUrl = "../images/sprite_pin.png",
+                spritePinUrlOrigin = "../images/sprite_pin_origin.png",
+            	spritePinUrlDestination = "../images/sprite_pin_destination.png",
             	i;
+
+            var directionsDisplay;
+            var directionsService = new google.maps.DirectionsService();            
 
             
 
@@ -195,7 +193,8 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 					rotateControl: scope.options.rotateControl,
 					streetViewControl: scope.options.streetViewControl
 				};
-
+                
+                directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
 				map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
 			};
 
@@ -214,11 +213,7 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 				    // pixelOffset : new google.maps.Size(0,-34),
 				    // maxWidth: 50
 				});
-
                 
-                console.log("====== scope.dataList: =======");
-                console.log(scope.dataList);
-                console.log("====== scope.dataList/END =======");
 
                 for (i in scope.dataList){
                     marker = new google.maps.Marker({
@@ -238,35 +233,49 @@ vacationsApp.directive('drawMap', function ($rootScope) {
                         infowindow.open(map, this); 
                     });
 
+                    
+                    google.maps.event.addListener(marker, 'click', function() {
+                        if(scope.route.origin == false){
+                            scope.route.origin = this.position;
+                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                        else if(this.getIcon().url != "../images/sprite_pin.png"){
+                            scope.route.origin = false;
+                            scope.route.destination = false;
+                            $rootScope.removeRoute();
+
+                            for (var i = 0; i < pins.length; i++) {
+                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                            }                            
+                        }
+                        else if(scope.route.destination == false){
+                            scope.route.destination = this.position;
+                            this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
+
+                            $rootScope.calcRoute();
+                        }
+                        else if(this.getIcon().url != "../images/sprite_pin.png"){
+                            scope.route.destination = false;
+                            this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                        else{
+                            scope.route.origin = false;
+                            scope.route.destination = false;
+                            $rootScope.removeRoute();
+
+                            for (var i = 0; i < pins.length; i++) {
+                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                            }                            
+
+                            scope.route.origin = this.position;
+                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                    });
+
                     pins.push(marker);
 
                     bgPositionX += 40;
                 }
-
-
-				// for(i = 0; i < scope.markers.length; i++){
-				// 	marker = new google.maps.Marker({
-				//         position : new google.maps.LatLng(scope.markers[i].position.split(",")[0], scope.markers[i].position.split(",")[1]),
-				//         map : map,
-				//         pinId : scope.markers[i].id,
-				//         pinName : scope.markers[i].name,
-				//         pinAddress : scope.markers[i].address,
-				//         pinUrl : scope.markers[i].url,
-				//         icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
-				//         zIndex: 100
-				//     });
-
-				//     google.maps.event.addListener(marker, 'mouseover', function() {
-				// 	    infowindow.close(); 
-				// 	    infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-				// 	    infowindow.open(map, this); 
-				// 	});
-
-				// 	pins.push(marker);
-
-				// 	bgPositionX += 40;
-				// }
-
                 
 				return pins;
 			};
@@ -279,20 +288,59 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 			        arrayPins[i].setMap(map);
 			    }
 			}
+
+            
+
+            $rootScope.calcRoute = function(){                
+                console.log(directionsDisplay);
+                directionsDisplay.suppressMarkers = true;
+                directionsDisplay.setMap(map);
+                directionsDisplay.setPanel(document.getElementById('directions-panel'));
+
+                console.log(scope.route.type);
+
+                
+                var haight = new google.maps.LatLng(51.5034412,-0.119678199999953);
+                var oceanBeach = new google.maps.LatLng(51.4034412,-0.109678199999953);
+
+                var selectedMode = document.getElementById('mode').value;
+                var request = {
+                    durationInTraffic: true,
+                    origin: scope.route.origin,
+                    destination: scope.route.destination,
+                    // Note that Javascript allows us to access the constant
+                    // using square brackets and a string value as its
+                    // "property."
+                    travelMode: google.maps.TravelMode[selectedMode]
+                };
+
+
+
+                directionsService.route(request, function(response, status) {
+                    if (status == google.maps.DirectionsStatus.OK) {
+                        directionsDisplay.setDirections(response);
+                    }
+                });
+
+                
+            }
+
+            $rootScope.removeRoute = function(){
+                directionsDisplay.setMap();
+                directionsDisplay.setPanel();
+            };
+            
             		
             if(scope.user){
                 //console.log("scope.user");
                 google.maps.event.addDomListener(window, 'load', scope.initializeMap());
-
+                
                 $rootScope.drawPin();
             }
             else{
                 //console.log("else scope.user");
             }
 			
-            console.log("$rootScope: ");
-            console.log($rootScope);
-
         }
     }
 });
@@ -426,57 +474,3 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     
 });
-
-
-
-// vacationsApp.controller("MapCtrl", function($scope){
-// 	angular.extend($scope, {
-// 		center: {
-// 			latitude: 51.45, // initial map center latitude
-// 			longitude: -0.20, // initial map center longitude
-// 		},
-// 		markers: [
-// 	        {
-// 	        	//icon: 'plane.png',
-// 	            latitude: 51.5034412,
-// 	            longitude: -0.119678199999953,
-// 	            showWindow: false,
-// 	            title: 'London Eye'
-// 	        },
-// 	        {
-// 	            latitude: 51.5227504,
-// 	            longitude: -0.15506379999999353,
-// 	            showWindow: false,
-// 	            title: 'Museu Madame Tussauds'
-// 	        }        
-// 	    ], // an array of markers,
-// 		zoom: 8, // the zoom level
-// 	});
-	
-
-	/*$scope.myMarkers = [
-		{
-			"latitude":51.5034412,
-			"longitude":-0.119678199999953,
-			"showWindow": true,
-			"title":"London Eye"
-		},
-		{
-			"latitude":51.5227504,
-			"longitude":-0.15506379999999353
-		}
-	];
-
-	$scope.center = {
-		latitude: 51.45,
-		longitude: -0.20,
-	};
-
-	$scope.zoom = 9;
-	$scope.markers = $scope.myMarkers;
-	$scope.fit = true;
-
-	$scope.add = function(){    
-		alert("oi");
-	}*/
-// });
