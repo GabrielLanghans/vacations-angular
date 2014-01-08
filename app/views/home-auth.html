@@ -16,8 +16,7 @@
 	
 	HOME AUTH
 	<div data-draw-map></div>
-
-
+    
     <div class="container" data-ng-controller="NavCtrl">
         <ul class="nav nav-tabs">
             <li data-ng-repeat="item in menu" data-ng-click="setPage(item)" data-ng-class="{active : isSelected(item)}"><a href="javascript:void(0);">{{item}}</a></li>
@@ -42,7 +41,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr data-ng-repeat="place in dataList.travels['-Z1hOuUqwertyuiopasa'].places">
+                        <tr data-ng-repeat="place in dataList.travels[dataList.lastTravel].places">
                             <!-- <td>{{place}}</td> -->
                             <td>{{$index}}</td>
                             <td>{{place.name}}</td>

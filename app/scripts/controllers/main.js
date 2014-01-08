@@ -19,6 +19,8 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
     $rootScope.user = User.getUser();
 
+    $rootScope.travel = {$show: false, date: ""};
+
     //$rootScope.user = userService;
 
     /*$scope.home = function() {
@@ -60,10 +62,12 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
                     //var newPushRef = userRef.push();
 
                     userRef.set($rootScope.user.uid, function(){
-                        userRef.child($rootScope.user.uid).set({name: $rootScope.user.displayName, uid: $rootScope.user.uid, travels: ""}, function(){
+                        userRef.child($rootScope.user.uid).set({name: $rootScope.user.displayName, uid: $rootScope.user.uid, travels: "", lastTravel: ""}, function(){
                             console.log("USER Adicionado!!!")
                         });
                     });
+
+                    
 
 
                 }
@@ -75,6 +79,10 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
                     });
                 }
             });
+
+            if(($scope.dataList.lastTravel == undefined) || ($scope.dataList.lastTravel == "")){
+                $rootScope.travel.$show = true;
+            }
 
             //$location.search('user',$rootScope.user.uid).path('/home');
 
@@ -99,11 +107,8 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
     }
 })
 
-vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams, User){
+vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams, User, fireFactory){
 
-    $scope.travel = [];
-
-    console.log($scope.dataList.travels['-Z1hOuUqwertyuiopasa']);
 
     /*for (i in $scope.dataList.travels){
         console.log($scope.dataList.travels[i]);        
@@ -115,7 +120,19 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
     $rootScope.user = User.getUser();
     $scope.user = User.getUser();
 
+
+    /*if(($scope.dataList.lastTravel == undefined) || ($scope.dataList.lastTravel == "")){
+        alert("oi");
+        for (i in $scope.dataList.travels){
+            $scope.dataList.lastTravel = $scope.dataList.travels[i].id;
+            break;
+        }
+        console.log($scope.dataList.lastTravel);
+    }*/
     
+    
+
+
     //$scope."/travels/-Z1hOuUqwertyuiopasa/places";
 
     //$scope.markers = [];
@@ -127,6 +144,9 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
     // console.log($scope.user);
     // console.log($scope);
     // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+
+
 
     var i;
 
@@ -160,7 +180,23 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 	    rotateControl: false,
 	    streetViewControl: false	    
 	}
-    
+
+    $scope.submitNewTravel = function(ref) {   
+        var lastTravelRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid);
+        lastTravelRef.update({lastTravel: ref.date}, function(){
+            console.log("Last Travel Adicionado!!!")
+        });
+
+        var travelRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/");
+        var newPushRef = travelRef.push();
+
+        newPushRef.set({id: newPushRef.name(), date: ref.date, places: ""}, function(){
+            console.log("Travel Adicionado!!!")
+        });
+
+        $rootScope.travel.$show = false;
+    }
+
 });
 
 
@@ -171,12 +207,43 @@ vacationsApp.directive('drawMap', function ($rootScope) {
         template:   '<div>'+
                         '<div id="container-map"></div>'+
                         '<div id="directions-panel"></div>'+                        
-                        '<select id="mode" data-ng-model="route.type">'+
-                            '<option value="DRIVING">Driving</option>'+
-                            '<option value="WALKING">Walking</option>'+
-                            '<option value="BICYCLING">Bicycling</option>'+
-                            '<option value="TRANSIT">Transit</option>'+
+                        '<div>'+                        
+                            '<h3>Tipo de Rota</h3>'+                        
+                            '<select id="mode" data-ng-model="route.type">'+
+                                '<option value="DRIVING">Driving</option>'+
+                                '<option value="WALKING">Walking</option>'+
+                                '<option value="BICYCLING">Bicycling</option>'+
+                                '<option value="TRANSIT">Transit</option>'+
+                            '</select>'+
+                        '</div>'+
+                        //'{{dataList.lastTravel}}'+
+                        /*'<select data-ng-model="dataList.lastTravel">'+
+                            //'<option value="">Selecione</option>'+
+                            '<option data-ng-repeat="place in dataList.travels" value="{{place.id}}">{{place.id}}</option>'+
+
+                            // '<option value="-Z1hOuUqwertyuiopasa">26</option>'+
+                            // '<option value="-Z2hOuUqwertyuiopasa">05</option>'+
                         '</select>'+
+                        */
+                        '<div>'+                        
+                            '<h3>Viagem</h3>'+                        
+                            '<div data-ng-hide="travel.$show">'+
+                                '<select data-ng-model="dataList.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in dataList.travels" data-ng-change="drawPin()"></select>'+
+                                '<button type="button">Nova Viagem</button>'+
+                            '</div>'+
+                            '<div data-ng-show="travel.$show">'+
+                                '{{dataList.lastTravel}}'+
+                                '<form name="formTravel">'+
+                                    '<div class="form-group" data-ng-class="{error: formTravel.date.$invalid && formTravel.date.$dirty}">'+
+                                        '<label class="control-label">Data</label>'+
+                                        '<input class="form-control" type="date" name="date" type="date" data-ng-model="travel.date" required>'+
+                                    '</div>'+
+                                    '<button class="btn btn-primary" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="submitNewTravel({date:travel.date})">Nova Viagem</button>'+
+                                '</form>'+
+                            '</div>'+
+                        '</div>'+
+
+
                         // '<button data-ng-click="calcRoute()">Calc Route</button>'+
                         // '<button data-ng-click="removeRoute()">Remove Route</button>'+
                     '</div>',
@@ -230,14 +297,14 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 				});
                 
 
-                for (i in scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places){
+                for (i in scope.dataList.travels[scope.dataList.lastTravel].places){
                     marker = new google.maps.Marker({
-                        position : new google.maps.LatLng(scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].position.split(",")[0], scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].position.split(",")[1]),
+                        position : new google.maps.LatLng(scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[0], scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[1]),
                         map : map,
-                        pinId : scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].id,
-                        pinName : scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].name,
-                        pinAddress : scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].address,
-                        pinUrl : scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places[i].url,
+                        pinId : scope.dataList.travels[scope.dataList.lastTravel].places[i].id,
+                        pinName : scope.dataList.travels[scope.dataList.lastTravel].places[i].name,
+                        pinAddress : scope.dataList.travels[scope.dataList.lastTravel].places[i].address,
+                        pinUrl : scope.dataList.travels[scope.dataList.lastTravel].places[i].url,
                         icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
                         zIndex: 100
                     });
@@ -350,7 +417,10 @@ vacationsApp.directive('drawMap', function ($rootScope) {
                 //console.log("scope.user");
                 google.maps.event.addDomListener(window, 'load', scope.initializeMap());
                 
+                
                 $rootScope.drawPin();
+                
+                
             }
             else{
                 //console.log("else scope.user");
@@ -406,7 +476,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     //$rootScope.travel[0].id
 
     $scope.delete = function(id) {
-        var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/"+ id);
+        var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $scope.dataList.lastTravel +"/places/"+ id);
         idRef.remove(function(){
             $rootScope.drawPin();
         });
@@ -424,7 +494,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     $scope.submitEdit = function(ref) {   
         console.log(ref);
-        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/"+ ref.id);
+        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $scope.dataList.lastTravel +"/places/"+ ref.id);
         /*idRef.remove(function(){
             $rootScope.drawPin();
         });*/        
@@ -449,9 +519,9 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     }
 
     $scope.submitNew = function(ref) {   
-        console.log($scope.dataList.travels['-Z1hOuUqwertyuiopasa'].places);
+        console.log($scope.dataList.lastTravel);
 
-        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places");
+        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $scope.dataList.lastTravel +"/places");
         //var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $rootScope.travel[0].id +"/places");
 
         //var placeRef = fireFactory.firebaseRef("users/facebook:100007322078152/travels/-Z3hOuUqwertyuiopasa/places");
@@ -464,6 +534,8 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
         this.cancel();
     }
+
+
 
     
 
