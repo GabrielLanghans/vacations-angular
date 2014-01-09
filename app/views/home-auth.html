@@ -65,10 +65,21 @@
                             <label class="control-label">Endereço</label>
                             <input class="form-control" type="text" name="address" value="{{dataPlace.address}}" data-ng-model="dataPlace.address" required>
                         </div>
-                        <div class="form-group" data-ng-class="{error: formPlace.position.$invalid && formPlace.position.$dirty}">
+                        <div class="form-group">
                             <label class="control-label">Position</label>
-                            <input class="form-control" type="text" name="position" value="{{dataPlace.position}}" data-ng-model="dataPlace.position" required>
+                            <input class="form-control" type="text" name="position" value="{{dataPlace.position}}" data-ng-model="dataPlace.position">
                         </div>
+                        
+                        <!-- <div class="form-group">
+                            <label class="control-label">Latitude</label>
+                            <input class="form-control" type="text" name="lat" value="{{dataPlace.lat}}" data-ng-model="dataPlace.lat">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="control-label">Longitude</label>
+                            <input class="form-control" type="text" name="long" value="{{dataPlace.long}}" data-ng-model="dataPlace.long">
+                        </div> -->
+                        
                         <div class="form-group" data-ng-class="{error: formPlace.url.$invalid && formPlace.url.$dirty}">
                             <label class="control-label">Url</label>
                             <input class="form-control" type="text" name="url" value="{{dataPlace.url}}" data-ng-model="dataPlace.url">
