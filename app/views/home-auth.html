@@ -41,9 +41,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr data-ng-repeat="place in dataList.travels[dataList.lastTravel].places">
+                        <tr data-ng-repeat="place in dataList.travels[dataList.lastTravel].places" data-ng-click="setCenter(place.position)">
                             <!-- <td>{{place}}</td> -->
-                            <td>{{$index}}</td>
+                            <td>{{$index +1}}</td>
                             <td>{{place.name}}</td>
                             <td><button class="btn btn-default btn-xs" type="button" data-ng-click="edit({id:place.id, position:place.position, name:place.name, address:place.address, url:place.url})">Editar</button></td>
                             <td><button class="btn btn-danger btn-xs" type="button" data-ng-click="delete(place.id)">Remover</button></td>

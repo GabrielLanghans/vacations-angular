@@ -17,9 +17,7 @@ vacationsApp.factory('User', function ($rootScope) {
 vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fireFactory, User){
     //$rootScope.status = {log: false, name: "", username: ""};
 
-    $rootScope.user = User.getUser();
-
-    $rootScope.travel = {$show: false, date: ""};
+    $rootScope.user = User.getUser();    
 
     //$rootScope.user = userService;
 
@@ -103,7 +101,7 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
     }
 })
 
-vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams, User, fireFactory){
+vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams, User, fireFactory, vacationsData){
 
 
     /*for (i in $scope.dataList.travels){
@@ -133,6 +131,8 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 
     //$scope.markers = [];
     $scope.route = {type: "TRANSIT", origin: false, destination: false};
+
+    $rootScope.travel = {$show: false, $edit: false, date: ""};
     //$scope.dataList = [];
 
     // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -183,11 +183,34 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
         $rootScope.travel.$show = true;
     }
 
-    $scope.newTravel = function(){
-        $rootScope.travel.$show = true;        
+    $scope.cancelTravel = function(){        
+        $rootScope.travel = vacationsData.cancelTravel();
+    }
+
+    $scope.newTravel = function(){        
+        $rootScope.travel = vacationsData.newTravel();
     }
 
     $scope.submitNewTravel = function(ref) {   
+        vacationsData.submitNewTravel($rootScope.user.uid, ref);        
+
+        this.cancelTravel();        
+    }
+
+    $scope.editTravel = function(travel) {
+        $rootScope.travel = vacationsData.editTravel(travel);
+    }
+
+    $scope.submitEditTravel = function(data) {   
+        vacationsData.submitEditTravel($rootScope.user.uid, $scope.dataList.lastTravel, data);
+
+        this.cancelTravel();        
+    }
+    
+
+
+
+    /*$scope.submitNewTravel = function(ref) {   
         var lastTravelRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid);
         lastTravelRef.update({lastTravel: ref.date}, function(){
             console.log("Last Travel Adicionado!!!")
@@ -201,12 +224,12 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
         });
 
         $rootScope.travel.$show = false;
-    }
+    }*/
 
 });
 
 
-vacationsApp.directive('drawMap', function ($rootScope, $q) {
+vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
     return {
         restrict: "A",       
         replace: true, 
@@ -236,6 +259,8 @@ vacationsApp.directive('drawMap', function ($rootScope, $q) {
                             '<div data-ng-hide="travel.$show">'+
                                 '<select data-ng-model="dataList.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in dataList.travels" data-ng-change="drawPin()"></select>'+
                                 '<button type="button" data-ng-click="newTravel()">Nova Viagem</button>'+                                
+                                '{{dataList.travels[dataList.lastTravel].date}}'+                                
+                                '<button type="button" data-ng-click="editTravel(dataList.travels[dataList.lastTravel].date)">Editar Viagem</button>'+                                
                             '</div>'+
                             '<div data-ng-show="travel.$show">'+
                                 '{{dataList.lastTravel}}'+
@@ -245,7 +270,8 @@ vacationsApp.directive('drawMap', function ($rootScope, $q) {
                                         '<input class="form-control" type="date" name="date" type="date" data-ng-model="travel.date" required>'+
                                     '</div>'+
                                     '<button class="btn btn-default" type="button" data-ng-show="travel.$show" data-ng-click="travel.$show = false">Cancelar</button>'+
-                                    '<button class="btn btn-primary" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="submitNewTravel({date:travel.date})">Nova Viagem</button>'+
+                                    '<button class="btn btn-primary" data-ng-hide="travel.$edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="submitNewTravel({date:travel.date})">Salvar</button>'+
+                                    '<button class="btn btn-primary" data-ng-show="travel.$edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="submitEditTravel({date:travel.date})">Editar</button>'+
                                 '</form>'+
                             '</div>'+
                         '</div>'+
@@ -266,11 +292,12 @@ vacationsApp.directive('drawMap', function ($rootScope, $q) {
                 lat,
                 lng,
                 latLng = [],
+                coords,
                 pins = [],
                 bgPositionX = 0,
                 spritePinUrl = "../images/sprite_pin.png",
                 spritePinUrlOrigin = "../images/sprite_pin_origin.png",
-                spritePinUrlDestination = "../images/sprite_pin_destination.png",
+                spritePinUrlDestination = "../images/sprite_pin_destination.png",                
                 i,
                 j,
                 cont = 0;
@@ -360,12 +387,18 @@ vacationsApp.directive('drawMap', function ($rootScope, $q) {
                 });
                 
                 var arr = [];
-
+                var deferr = $q.defer();
 
                 for (j in scope.dataList.travels[scope.dataList.lastTravel].places){                    
                     arr.length = 0;
-                    arr.push(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address));
-                    //this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[i].address).then();
+
+                    if((scope.dataList.travels[scope.dataList.lastTravel].places[j].position == "") || (scope.dataList.travels[scope.dataList.lastTravel].places[j].position == undefined)){
+                        arr.push(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address));
+                    }
+                    else{
+                        deferr.resolve(scope.dataList.travels[scope.dataList.lastTravel].places[j].position);
+                        arr.push(deferr.promise);   
+                    }
                 }
 
                 $q.all(arr).then(function(response) {                    
@@ -394,16 +427,50 @@ vacationsApp.directive('drawMap', function ($rootScope, $q) {
                             });
                             // console.log(lat);
                         }*/
-                        lat = "";
+
+                        /*lat = "";
                         lng = "";
 
                         console.log(cont);
                         console.log(response[0][cont].b);                        
                         lat = response[0];
-                        lng = response[1];
+                        lng = response[1];*/
+
+                        console.log(scope.dataList.travels[scope.dataList.lastTravel].places[i].position);
+
+                        if((scope.dataList.travels[scope.dataList.lastTravel].places[i].position == "") || (scope.dataList.travels[scope.dataList.lastTravel].places[i].position == undefined)){
+                            /*console.log("position vazio");                        
+                            arr.push(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address));
+                            */
+                            // cria position no banco
+                            
+                            // this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address).then(function(teste){
+                            //     console.log(teste);
+                            // });
+
+                            console.log("position vazio");
+                            console.log(response[0][0].b);
+                            console.log(response[0][0].d);
+                            //console.log("response[0][cont].b: "+response[0][cont].b);
+
+                            coords = response[0][0].b +","+ response[0][0].d; 
+                            //vacationsData.submitPosition($rootScope.user.uid, scope.dataList.lastTravel, scope.dataList.travels[scope.dataList.lastTravel].places[i].id, coords);
+                            vacationsData.submitPosition($rootScope.user.uid, scope.dataList.lastTravel, scope.dataList.travels[scope.dataList.lastTravel].places[i].id, coords);
+
+                            lat = response[0][0].b;
+                            lng = response[0][0].d;
+                            // lat = response[0][0].split(",")[0];
+                            // lng = response[0][0].split(",")[1];
+                            console.log("lat: "+lat);
+                            console.log("lng: "+lng);
+                        }
+                        else{
+                            lat = scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[0];
+                            lng = scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[1];
+                        }
 
                         marker = new google.maps.Marker({
-                            position : new google.maps.LatLng(response[0][cont].b, response[0][cont].d),
+                            position : new google.maps.LatLng(lat, lng),
                             map : map,
                             pinId : scope.dataList.travels[scope.dataList.lastTravel].places[i].id,
                             pinName : scope.dataList.travels[scope.dataList.lastTravel].places[i].name,
@@ -528,6 +595,11 @@ vacationsApp.directive('drawMap', function ($rootScope, $q) {
                 directionsDisplay.setMap();
                 directionsDisplay.setPanel();
             };
+
+            $rootScope.setCenter = function(position){
+                map.setCenter(new google.maps.LatLng(position.split(",")[0], position.split(",")[1]));
+                map.setZoom(15);
+            };
             
                     
             if(scope.user){
@@ -549,138 +621,138 @@ vacationsApp.directive('drawMap', function ($rootScope, $q) {
 
 
 vacationsApp.controller("NavCtrl", function($scope, $rootScope){
-
-    //$rootScope.user = User.getUser();
     $scope.menu = ["Atrações", "Roteiro"];
 
     $scope.setPage = function(section) {
         $scope.selected = section;
-        //alert($scope.selected);
     }
 
     $scope.isSelected = function(section) {
         return $scope.selected === section;
-    }
-
-    console.log($scope.dataList);
-    
-    
-
-    // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-    // console.log($rootScope.user);
-    // console.log($scope.user);
-    // console.log($scope);
-    // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-
-    
+    }    
 });
 
-vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFactory){
+vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFactory, vacationsData){
 
     //$rootScope.user = User.getUser();
 
     $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
 
-    //{"position":"51.50134,-0.141883", "id":"-C1hOuUqwertyuiopasa", "name":"Buckingham Palace", "address":"London SW1A 1AA, Reino Unido", "url":"http://www.royal.gov.uk/theroyalresidences/buckinghampalace/buckinghampalace.aspx"}
-    
-
-    //FALTA CONFIGURAR O AUTH NA FIREBASE PARA PERMITIR A EDIÇÃO APENAS QUANDO O USUÁRIO CORRETO ESTIVER LOGADO. TALVEZ SÓ PERMITIR LEITURA NESSAS CONDIÇÕES TAMBÉM
-
     $scope.cancel = function() {
-        $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+        $scope.dataPlace = vacationsData.cancel();
     }
 
-    //$rootScope.travel[0].id
-
     $scope.delete = function(id) {
-        var idRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $scope.dataList.lastTravel +"/places/"+ id);
-        idRef.remove(function(){
-            $rootScope.drawPin();
-        });
-        //this.reloadPin();
-
-        //alert(id);
+        vacationsData.delete($rootScope.user.uid, $scope.dataList.lastTravel, id);
 
         this.cancel();
-
     }
 
     $scope.edit = function(ref) {
-        $scope.dataPlace = {$show: true, $edit: true, position: ref.position, id: ref.id, name: ref.name, address: ref.address, url: ref.url};
+        $scope.dataPlace = vacationsData.edit(ref);
     }
 
-    $scope.submitEdit = function(ref) {   
-        console.log(ref);
-        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $scope.dataList.lastTravel +"/places/"+ ref.id);
-        /*idRef.remove(function(){
-            $rootScope.drawPin();
-        });*/        
-        /*placeRef.child('position').set(ref.position);
-        placeRef.child('name').set(ref.name);
-        placeRef.child('address').set(ref.address);
-        placeRef.child('url').set(ref.url);
-        */
-
-        placeRef.update({position: ref.position, name: ref.name, address: ref.address, url: ref.url}, function(){
-            console.log("Editado!!!")
-            $rootScope.drawPin();            
-        });
-
-        // FALTA ATUALIZAR OS PINS NO CALLBACK DE INSERIR
+    $scope.submitEdit = function(ref) {
+        vacationsData.submitEdit($rootScope.user.uid, $scope.dataList.lastTravel, ref);
 
         this.cancel();
     }
 
     $scope.new = function() {
-        $scope.dataPlace = {$show: true, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+        $scope.dataPlace = vacationsData.new();        
     }
 
     $scope.submitNew = function(ref) {   
-        console.log($scope.dataList.lastTravel);
-
-        var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $scope.dataList.lastTravel +"/places");
-        //var placeRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/"+ $rootScope.travel[0].id +"/places");
-
-        //var placeRef = fireFactory.firebaseRef("users/facebook:100007322078152/travels/-Z3hOuUqwertyuiopasa/places");
-        var newPushRef = placeRef.push();
-
-        newPushRef.set({position: ref.position, id: newPushRef.name(), name: ref.name, address: ref.address, url: ref.url}, function(){
-            console.log("Adicionado!!!")
-            $rootScope.drawPin();            
-        });
+        vacationsData.submitNew($rootScope.user.uid, $scope.dataList.lastTravel, ref);
 
         this.cancel();
     }
+});
 
+vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
+    var storeData = [];
 
+    this.cancel = function() {
+        storeData = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+        return storeData;
+    },
+    this.delete = function (user, travel, id) {
+        var idRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ id);
+        idRef.remove(function(){
+            console.log("Deletado!!!")
+            $rootScope.drawPin();
+        });
+    },
+    this.edit = function(data) {
+        storeData = {$show: true, $edit: true, position: data.position, id: data.id, name: data.name, address: data.address, url: data.url};
+        return storeData;
+    },
+    this.submitEdit = function(user, travel, data) {
+        var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ data.id);
+        placeRef.update({position: data.position, name: data.name, address: data.address, url: data.url}, function(){
+            console.log("Editado!!!")
+            $rootScope.drawPin();            
+        });
+    },
+    this.new = function() {
+        storeData = {$show: true, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+        return storeData;
+    },
+    this.submitNew = function(user, travel, data) {
+        var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places");
+        var newPushRef = placeRef.push();
 
-    
+        newPushRef.set({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, url: data.url}, function(){
+            console.log("Adicionado!!!")
+            $rootScope.drawPin();            
+        });
+    },
+    this.submitPosition = function(user, travel, place, data) {
+        console.log(place);
+        console.log(data);
 
-    /*
-    evento para quando remove  um filho. Não funcionou muito bem pois não dispara a primeira vez. Fiz algo errado? TALVEZ DENTRO DE $rootScope.$apply(function() { FUNCIONE ;)
-    var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/0/places/");
-    placesRef.on('child_removed', function(snapshot) {
-      //var userName = snapshot.name(), userData = snapshot.val();
-      //alert('User ' + userName + ' has left the chat.');
-      console.log("Removido. Atualizando os pins!");
-      $rootScope.drawPin();
-    });
-    */
+        var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ place);
+        placeRef.update({position: data}, function(){
+            console.log("Posição Editado!!!")
+        });
+    },
+    this.cancelTravel = function() {
+        storeData = {$show: false, $edit: false, date: ""};
+        return storeData;
+    },
+    this.editTravel = function(data) {
+        storeData = {$show: true, $edit: true, date: data};
+        return storeData;
+    },
+    this.submitEditTravel = function(user, travel, data) {
+        var lastTravelRef = fireFactory.firebaseRef("users/" + user);
+        lastTravelRef.update({lastTravel: data.date}, function(){
+            console.log("Last Travel Editado!!!")
+        });
 
-    /*var placesRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places/");
-    placesRef.on('child_changed', function(snapshot) {
-      //var userName = snapshot.name(), userData = snapshot.val();
-      //alert('User ' + userName + ' has left the chat.');
-      //$rootScope.$apply(function() {
-            alert("oioiioioi");
-          console.log("Editado. Atualizando os pins!");
+        var travelRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel);
+        travelRef.update({date: data.date}, function(){
+            console.log("Travel Editado!!!")
+        });
+    },
+    this.newTravel = function() {
+        storeData = {$show: true, $edit: false, date: ""};
+        return storeData;
+    },
+    this.submitNewTravel = function(user, data) {
+        var lastTravelRef = fireFactory.firebaseRef("users/" + user);
+        lastTravelRef.update({lastTravel: data.date}, function(){
+            console.log("Last Travel Adicionado!!!")
+        });
 
-          $rootScope.drawPin();
-      //});
-    });*/
+        var travelRef = fireFactory.firebaseRef("users/" + user + "/travels/");
+        var newPushRef = travelRef.push();
 
-    console.log($scope)
-
-
+        newPushRef.set({id: newPushRef.name(), date: data.date, places: ""}, function(){
+            console.log("Travel Adicionado!!!")
+        });
+    }
     
 });
+
+
