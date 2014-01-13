@@ -206,6 +206,19 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 
         this.cancelTravel();        
     }
+    $scope.deleteTravel = function() {
+        var newLastTravel;
+        for (i in $scope.dataList.travels){
+            if($scope.dataList.travels[i].id != $scope.dataList.lastTravel){
+                newLastTravel = $scope.dataList.travels[i].id;
+                break;
+            }
+        }
+
+        vacationsData.deleteTravel($rootScope.user.uid, $scope.dataList.lastTravel, newLastTravel);
+
+        this.cancelTravel();        
+    }
     
 
 
@@ -262,14 +275,17 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                                 '{{dataList.travels[dataList.lastTravel].date}}'+                                
                                 '<button type="button" data-ng-click="editTravel(dataList.travels[dataList.lastTravel].date)">Editar Viagem</button>'+                                
                             '</div>'+
-                            '<div data-ng-show="travel.$show">'+
-                                '{{dataList.lastTravel}}'+
+
+
+                            '{{dataList.lastTravel}}'+
+                            '<div data-ng-show="travel.$show">'+                                
                                 '<form name="formTravel">'+
                                     '<div class="form-group" data-ng-class="{error: formTravel.date.$invalid && formTravel.date.$dirty}">'+
                                         '<label class="control-label">Data</label>'+
                                         '<input class="form-control" type="date" name="date" type="date" data-ng-model="travel.date" required>'+
                                     '</div>'+
                                     '<button class="btn btn-default" type="button" data-ng-show="travel.$show" data-ng-click="travel.$show = false">Cancelar</button>'+
+                                    '<button class="btn btn-danger" type="button" data-ng-show="travel.$edit" data-ng-click="deleteTravel()">Remover</button>'+
                                     '<button class="btn btn-primary" data-ng-hide="travel.$edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="submitNewTravel({date:travel.date})">Salvar</button>'+
                                     '<button class="btn btn-primary" data-ng-show="travel.$edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="submitEditTravel({date:travel.date})">Editar</button>'+
                                 '</form>'+
@@ -726,7 +742,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
     },
     this.submitEditTravel = function(user, travel, data) {
         var lastTravelRef = fireFactory.firebaseRef("users/" + user);
-        lastTravelRef.update({lastTravel: data.date}, function(){
+        lastTravelRef.update({lastTravel: travel}, function(){
             console.log("Last Travel Editado!!!")
         });
 
@@ -740,19 +756,34 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         return storeData;
     },
     this.submitNewTravel = function(user, data) {
-        var lastTravelRef = fireFactory.firebaseRef("users/" + user);
-        lastTravelRef.update({lastTravel: data.date}, function(){
-            console.log("Last Travel Adicionado!!!")
-        });
-
         var travelRef = fireFactory.firebaseRef("users/" + user + "/travels/");
         var newPushRef = travelRef.push();
 
         newPushRef.set({id: newPushRef.name(), date: data.date, places: ""}, function(){
             console.log("Travel Adicionado!!!")
         });
-    }
-    
+
+        var lastTravelRef = fireFactory.firebaseRef("users/" + user);
+        lastTravelRef.update({lastTravel: newPushRef.name()}, function(){
+            console.log("Last Travel Adicionado!!!")
+        });
+    },
+    this.deleteTravel = function (user, travel, data) {
+        var idRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel);
+        idRef.remove(function(){
+            console.log("Travel Deletado!!!")
+            $rootScope.drawPin();
+        });
+
+        var lastTravelRef = fireFactory.firebaseRef("users/" + user);
+        lastTravelRef.update({lastTravel: data}, function(){
+            console.log("Last Travel Editado!!!")
+        });
+
+
+
+        
+    }    
 });
 
 
