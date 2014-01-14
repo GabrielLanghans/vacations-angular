@@ -5,7 +5,8 @@ var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAni
 
 vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) {
     var baseUrl = 'https://vacations-initial.firebaseio.com/',
-        path = "";
+        path = "",
+        scopeName = "";
 
     $rootScope.dataList = [];
             
@@ -14,11 +15,18 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) 
             path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;
             return new Firebase(path);
         },
-        dataRef: function(path) {            
+        dataRef: function(path, name) {            
+            if(name == undefined){
+              scopeName = "dataList";
+            }
+            else{
+              scopeName = name;
+            }
+
             path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;     
 
             var ref = new Firebase(path);
-            var promise = angularFire(ref, $rootScope, "dataList");
+            var promise = angularFire(ref, $rootScope, scopeName);
 
             return promise;
         }
@@ -31,12 +39,15 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
       .when('/', {
         templateUrl: 'views/home.html',
         resolve: {
-          verifyAuth: function($route, $rootScope, $location){
+          verifyData: function($route, $rootScope, $location, fireFactory){
             if($rootScope.user){
               console.log($rootScope.user);
               $location.path('/home');
               //redirectTo: '/';
-            }            
+            }
+            else{
+              return fireFactory.dataRef("place", "placeData");
+            }
           }
         }
       })
@@ -45,11 +56,11 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
         templateUrl: 'views/home-auth.html',
         resolve: {
           dataLoad: function($route, fireFactory, $rootScope, $location) {    
-            if($rootScope.user){              
-              return fireFactory.dataRef("users/" + $rootScope.user.uid);  
-              //return fireFactory.dataRef("users/" + $rootScope.user.uid + "/travels/-Z1hOuUqwertyuiopasa/places");  
+            if($rootScope.user){ 
+              // fireFactory.dataRef("place/category", "placeRef").then(function(){                 
+              // });
 
-              //return fireFactory.dataRef("users/facebook:100007322078152/travels/0/places");  
+              return fireFactory.dataRef("users/" + $rootScope.user.uid);  
             }
             else{
               return $location.path("/");

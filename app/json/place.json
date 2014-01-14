@@ -1,0 +1,11 @@
+{
+	"category":{
+		"-001": {"id": "-001", "type":"Hotel"},
+		"-002": {"id": "-002", "type":"Aeroporto"},
+		"-003": {"id": "-003", "type":"Estação de Trem"},
+		"-004": {"id": "-004", "type":"Museu"},
+		"-005": {"id": "-005", "type":"Atração Turística"},
+		"-006": {"id": "-006", "type":"Estádio de Futebol"},
+		"-007": {"id": "-007", "type":"Restaurante"}
+	}
+}

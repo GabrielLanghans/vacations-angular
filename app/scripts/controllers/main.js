@@ -17,7 +17,9 @@ vacationsApp.factory('User', function ($rootScope) {
 vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fireFactory, User){
     //$rootScope.status = {log: false, name: "", username: ""};
 
-    $rootScope.user = User.getUser();    
+    $rootScope.user = User.getUser(); 
+
+    console.log($rootScope);   
 
     //$rootScope.user = userService;
 
@@ -272,7 +274,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                             '<div data-ng-hide="travel.$show">'+
                                 '<select data-ng-model="dataList.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in dataList.travels" data-ng-change="drawPin()"></select>'+
                                 '<button type="button" data-ng-click="newTravel()">Nova Viagem</button>'+                                
-                                '{{dataList.travels[dataList.lastTravel].date}}'+                                
+                                //'{{dataList.travels[dataList.lastTravel].date}}'+                                
                                 '<button type="button" data-ng-click="editTravel(dataList.travels[dataList.lastTravel].date)">Editar Viagem</button>'+                                
                             '</div>'+
 
@@ -652,7 +654,14 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     //$rootScope.user = User.getUser();
 
-    $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+    /*fireFactory.dataRef("place/category", "placeRef").then(function(){
+        console.log($rootScope);    
+    });
+    */
+
+    console.log($rootScope);   
+
+    $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", category:"", url: ""};
 
     $scope.cancel = function() {
         $scope.dataPlace = vacationsData.cancel();
@@ -689,7 +698,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
     var storeData = [];
 
     this.cancel = function() {
-        storeData = {$show: false, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+        storeData = {$show: false, $edit: false, position: "", id: "", name: "", address: "", category: "", url: ""};
         return storeData;
     },
     this.delete = function (user, travel, id) {
@@ -700,25 +709,25 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         });
     },
     this.edit = function(data) {
-        storeData = {$show: true, $edit: true, position: data.position, id: data.id, name: data.name, address: data.address, url: data.url};
+        storeData = {$show: true, $edit: true, position: data.position, id: data.id, name: data.name, address: data.address, category: data.category, url: data.url};
         return storeData;
     },
     this.submitEdit = function(user, travel, data) {
         var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ data.id);
-        placeRef.update({position: data.position, name: data.name, address: data.address, url: data.url}, function(){
+        placeRef.update({position: data.position, name: data.name, address: data.address, category: data.category, url: data.url}, function(){
             console.log("Editado!!!")
             $rootScope.drawPin();            
         });
     },
     this.new = function() {
-        storeData = {$show: true, $edit: false, position: "", id: "", name: "", address: "", url: ""};
+        storeData = {$show: true, $edit: false, position: "", id: "", name: "", address: "", category: "", url: ""};
         return storeData;
     },
     this.submitNew = function(user, travel, data) {
         var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places");
         var newPushRef = placeRef.push();
 
-        newPushRef.set({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, url: data.url}, function(){
+        newPushRef.set({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url}, function(){
             console.log("Adicionado!!!")
             $rootScope.drawPin();            
         });
