@@ -74,7 +74,7 @@
                         
                         <div class="form-group">
                             <label class="control-label">Tipo</label>
-                            <select class="form-control" name="type" data-ng-model="dataPlace.category" data-ng-options="category.id as category.type for (key, category) in placeData.category" data-ng-change=""></select>
+                            <select class="form-control" name="type" data-ng-model="dataPlace.category" data-ng-options="category.id as category.type for (key, category) in placeData.category | toArray | orderBy:'type'" data-ng-change=""></select>
                             <!-- fazer funcionar o filtro " | orderBy:category.type" no data-ng-options -->
                         </div>
                         
