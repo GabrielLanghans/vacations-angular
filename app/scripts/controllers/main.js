@@ -19,7 +19,7 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
     $rootScope.user = User.getUser(); 
 
-    console.log($rootScope);   
+    //console.log($rootScope);   
 
     //$rootScope.user = userService;
 
@@ -34,21 +34,21 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             User.setUser(error);
             $rootScope.user = error;
 
-            console.log("=======================");
-            console.log("error: ");
-            console.log($rootScope.user);
-            console.log("=======================");
+            // console.log("=======================");
+            // console.log("error: ");
+            // console.log($rootScope.user);
+            // console.log("=======================");
 
         } else if (user) {            
             //$rootScope.status = {log: true, name: user.name, username: user.username};
             User.setUser(user);
             $rootScope.user = user;
 
-            console.log("=======================");
-            console.log("logou: ");
-            console.log($rootScope.user);
-            console.log($scope.user);
-            console.log("=======================");
+            // console.log("=======================");
+            // console.log("logou: ");
+            // console.log($rootScope.user);
+            // console.log($scope.user);
+            // console.log("=======================");
 
 
             var userRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid);
@@ -86,9 +86,9 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             User.setUser("");
             $rootScope.user = [];
 
-            console.log("=======================");
-            console.log("usuário deslogado");
-            console.log("=======================");
+            // console.log("=======================");
+            // console.log("usuário deslogado");
+            // console.log("=======================");
 
             $location.path('/');
         }
@@ -179,7 +179,7 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
         streetViewControl: false        
     }
 
-    console.log($scope.dataList.lastTravel);
+    // console.log($scope.dataList.lastTravel);
     if(($scope.dataList.lastTravel == undefined) || ($scope.dataList.lastTravel == "")){
         //alert('($scope.dataList.lastTravel == undefined) || ($scope.dataList.lastTravel == "")')
         $rootScope.travel.$show = true;
@@ -309,7 +309,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                 geocoder,
                 lat,
                 lng,
-                latLng = [],
+                valGeocode,
                 coords,
                 pins = [],
                 bgPositionX = 0,
@@ -319,6 +319,9 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                 i,
                 j,
                 cont = 0;
+                //deferred = $q.defer(),
+                //defer = $q.defer(),
+                //deferr = $q.defer();
 
             var directionsDisplay;
             var directionsService = new google.maps.DirectionsService();    
@@ -328,7 +331,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
             scope.codeAddress = function(address) {
                 var deferred = $q.defer();
-                latLng = [];
+                valGeocode = "";
               //   var getMessages = function() {
               //   var deferred = $q.defer();
 
@@ -345,7 +348,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
                 geocoder.geocode( { 'address': address}, function(results, status) {                   
                     //latLng.length = 0;
-                    console.log(latLng);
+                    // console.log(latLng);
                     if (status == google.maps.GeocoderStatus.OK) {
                         //console.log(results[0].geometry.location.b);
                         /*map.setCenter(results[0].geometry.location);
@@ -356,20 +359,22 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
                         // latLng.push(results[0].geometry.location.b);
                         // latLng.push(results[0].geometry.location.d);
-                        latLng.push(results[0].geometry.location);
-                      
-                        console.log(latLng);
+                        valGeocode = results[0].geometry.location;
+
+                        console.log(valGeocode);
+                        //console.log(results[0].geometry.location.lat());
+                        
+
+                        //alert(latLng);
 
                     }
                     else {
                         alert('Geocode was not successful for the following reason: ' + status);
-                        //latLng = status;
                     }
 
-                    deferred.resolve(latLng);                    
+                    deferred.resolve(valGeocode);                    
                 });
 
-                latLng.length = 0;
                 return deferred.promise;                
             }
 
@@ -387,7 +392,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
             };
 
             scope.getPin = function(){
-                var defer = $q.defer();
+                var defer = $q.defer();                
 
                 //limpa os pins
                 for (var i = 0; i < pins.length; i++) {
@@ -404,24 +409,36 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                     // maxWidth: 50
                 });
                 
-                var arr = [];
-                var deferr = $q.defer();
+                var arrayGeocoder = [];
+                var arrayPosition = [];
+                arrayGeocoder.length = 0;
+                arrayPosition.length = 0;
+                
+                //var deferr = $q.defer();
 
+                
                 for (j in scope.dataList.travels[scope.dataList.lastTravel].places){                    
-                    arr.length = 0;
+                    arrayGeocoder.length = 0;
 
+                    
                     if((scope.dataList.travels[scope.dataList.lastTravel].places[j].position == "") || (scope.dataList.travels[scope.dataList.lastTravel].places[j].position == undefined)){
-                        arr.push(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address));
-                    }
-                    else{
-                        deferr.resolve(scope.dataList.travels[scope.dataList.lastTravel].places[j].position);
-                        arr.push(deferr.promise);   
-                    }
-                }
+                        //alert("vazio");
+                        arrayGeocoder.push(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address));
 
-                $q.all(arr).then(function(response) {                    
+                        console.log("Endereço: "+scope.dataList.travels[scope.dataList.lastTravel].places[j].address);
+                    }
+                    /*else{
+                        deferr.resolve(scope.dataList.travels[scope.dataList.lastTravel].places[j].position);
+                        arrayPosition.push(deferr.promise);   
+                    }*/
+                }                
+
+                $q.all(arrayGeocoder).then(function(responseGeo) {   
+                    //alert(response);
                     // var billingAccounts = data[0];
                     // var shippingAccounts = data[1];
+
+                    console.log(responseGeo);
 
                     cont = 0;
                     for (i in scope.dataList.travels[scope.dataList.lastTravel].places){                    
@@ -454,7 +471,9 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                         lat = response[0];
                         lng = response[1];*/
 
-                        console.log(scope.dataList.travels[scope.dataList.lastTravel].places[i].position);
+                        // console.log(scope.dataList.travels[scope.dataList.lastTravel].places[i].position);
+                        // console.log(typeof scope.dataList.travels[scope.dataList.lastTravel].places[i].position);
+                        // console.log(responseGeo);
 
                         if((scope.dataList.travels[scope.dataList.lastTravel].places[i].position == "") || (scope.dataList.travels[scope.dataList.lastTravel].places[i].position == undefined)){
                             /*console.log("position vazio");                        
@@ -466,21 +485,26 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                             //     console.log(teste);
                             // });
 
-                            console.log("position vazio");
-                            console.log(response[0][0].b);
-                            console.log(response[0][0].d);
+                            //console.log("position vazio");                            
                             //console.log("response[0][cont].b: "+response[0][cont].b);
 
-                            coords = response[0][0].b +","+ response[0][0].d; 
+
+                            console.log(responseGeo[0].lat());
+                            console.log(responseGeo[0].lng());
+
+                            lat = responseGeo[0].lat();
+                            lng = responseGeo[0].lng();
+
+                            //console.log(responseGeo[0][0].geometry.location.lat());
+
+                            coords = lat +","+ lng; 
+                            //var teste = responseGeo[0][0][0] +","+ responseGeo[0][0][1];
                             //vacationsData.submitPosition($rootScope.user.uid, scope.dataList.lastTravel, scope.dataList.travels[scope.dataList.lastTravel].places[i].id, coords);
                             vacationsData.submitPosition($rootScope.user.uid, scope.dataList.lastTravel, scope.dataList.travels[scope.dataList.lastTravel].places[i].id, coords);
 
-                            lat = response[0][0].b;
-                            lng = response[0][0].d;
+                            
                             // lat = response[0][0].split(",")[0];
-                            // lng = response[0][0].split(",")[1];
-                            console.log("lat: "+lat);
-                            console.log("lng: "+lng);
+                            // lng = response[0][0].split(",")[1];                            
                         }
                         else{
                             lat = scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[0];
@@ -549,8 +573,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
                         cont++;
 
-                        defer.resolve(pins);
-                        console.log("end for");
+                        defer.resolve(pins);                        
                     }
 
                 });
@@ -562,10 +585,10 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
                 scope.getPin().then(function(response){
                     var arrayPins = response[0];                    
-                    console.log(response[0]);
+                    //console.log(response[0]);
 
                     for(i = 0; i < arrayPins.length; i++){
-                        console.log(arrayPins[i]);
+                        //console.log(arrayPins[i]);
                         arrayPins[0].setMap(map);
                     }
                 });
@@ -576,12 +599,12 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
             
 
             $rootScope.calcRoute = function(){                
-                console.log(directionsDisplay);
+                //console.log(directionsDisplay);
                 directionsDisplay.suppressMarkers = true;
                 directionsDisplay.setMap(map);
                 directionsDisplay.setPanel(document.getElementById('directions-panel'));
 
-                console.log(scope.route.type);
+                //console.log(scope.route.type);
 
                 
                 var haight = new google.maps.LatLng(51.5034412,-0.119678199999953);
@@ -659,9 +682,9 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     });
     */
 
-    console.log($rootScope);   
+    //console.log($rootScope);   
 
-    $scope.dataPlace = {$show: false, $edit: false, position: "", id: "", name: "", address: "", category:"", url: ""};
+    $scope.dataPlace = {$show: false, $edit: false, $address: "", position: "", id: "", name: "", address: "", category:"", url: ""};
 
     $scope.cancel = function() {
         $scope.dataPlace = vacationsData.cancel();
@@ -675,10 +698,14 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     $scope.edit = function(ref) {
         $scope.dataPlace = vacationsData.edit(ref);
+        
     }
 
     $scope.submitEdit = function(ref) {
-        vacationsData.submitEdit($rootScope.user.uid, $scope.dataList.lastTravel, ref);
+        if(ref.address != ref.$address){
+            ref.position = "";
+        }
+        vacationsData.submitEdit($rootScope.user.uid, $scope.dataList.lastTravel, ref);        
 
         this.cancel();
     }
@@ -698,7 +725,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
     var storeData = [];
 
     this.cancel = function() {
-        storeData = {$show: false, $edit: false, position: "", id: "", name: "", address: "", category: "", url: ""};
+        storeData = {$show: false, $edit: false, $address: "", position: "", id: "", name: "", address: "", category: "", url: ""};
         return storeData;
     },
     this.delete = function (user, travel, id) {
@@ -709,7 +736,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         });
     },
     this.edit = function(data) {
-        storeData = {$show: true, $edit: true, position: data.position, id: data.id, name: data.name, address: data.address, category: data.category, url: data.url};
+        storeData = {$show: true, $edit: true, $address: data.address, position: data.position, id: data.id, name: data.name, address: data.address, category: data.category, url: data.url};
         return storeData;
     },
     this.submitEdit = function(user, travel, data) {
@@ -720,7 +747,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         });
     },
     this.new = function() {
-        storeData = {$show: true, $edit: false, position: "", id: "", name: "", address: "", category: "", url: ""};
+        storeData = {$show: true, $edit: false, $address: "", position: "", id: "", name: "", address: "", category: "", url: ""};
         return storeData;
     },
     this.submitNew = function(user, travel, data) {

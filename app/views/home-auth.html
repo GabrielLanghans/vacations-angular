@@ -47,7 +47,7 @@
                             <td>{{$index +1}}</td>
                             <td>{{place.name}}</td>
                             <td>{{placeData.category[place.category].type}}</td>
-                            <td><button class="btn btn-default btn-xs" type="button" data-ng-click="edit({id:place.id, position:place.position, name:place.name, address:place.address, category:place.category, url:place.url})">Editar</button></td>
+                            <td><button class="btn btn-default btn-xs" type="button" data-ng-click="edit({id:place.id, $address:place.address, position:place.position, name:place.name, address:place.address, category:place.category, url:place.url})">Editar</button></td>
                             <td><button class="btn btn-danger btn-xs" type="button" data-ng-click="delete(place.id)">Remover</button></td>
                         </tr>
                     </tbody>
@@ -65,17 +65,18 @@
                         </div>
                         <div class="form-group" data-ng-class="{error: formPlace.address.$invalid && formPlace.address.$dirty}">
                             <label class="control-label">Endereço</label>
-                            <input class="form-control" type="text" name="address" value="{{dataPlace.address}}" data-ng-model="dataPlace.address" required>
+                            <input class="form-control" type="text" name="address" value="{{dataPlace.address}}" data-ng-model="dataPlace.$address" required>
+                            $address: {{dataPlace.$address}}<br>
+                            address: {{dataPlace.address}}
                         </div>
                         <div class="form-group">
                             <label class="control-label">Position</label>
-                            <input class="form-control" type="text" name="position" value="{{dataPlace.position}}" data-ng-model="dataPlace.position">
+                            <input class="form-control" type="text" name="position" value="{{dataPlace.position}}" data-ng-model="dataPlace.position" disabled>                            
                         </div>
                         
                         <div class="form-group">
                             <label class="control-label">Tipo</label>
                             <select class="form-control" name="type" data-ng-model="dataPlace.category" data-ng-options="category.id as category.type for (key, category) in placeData.category | toArray | orderBy:'type'" data-ng-change=""></select>
-                            <!-- fazer funcionar o filtro " | orderBy:category.type" no data-ng-options -->
                         </div>
                         
                         <!-- <div class="form-group">
@@ -95,8 +96,8 @@
 
                         <div class="pull-right">
                             <button class="btn btn-default" type="button" data-ng-click="cancel()">Cancelar</button>        
-                            <button class="btn btn-primary" type="button" data-ng-show="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitEdit({id:dataPlace.id, position:'', name:dataPlace.name, address:dataPlace.address, category:dataPlace.category, url:dataPlace.url})">Editar</button>
-                            <button class="btn btn-primary" type="button" data-ng-hide="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitNew({id:dataPlace.id, position:dataPlace.position, name:dataPlace.name, address:dataPlace.address, category:dataPlace.category, url:dataPlace.url})">Salvar</button>                                
+                            <button class="btn btn-primary" type="button" data-ng-show="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitEdit({id:dataPlace.id, $address:dataPlace.address, position:dataPlace.position, name:dataPlace.name, address:dataPlace.$address, category:dataPlace.category, url:dataPlace.url})">Editar</button>
+                            <button class="btn btn-primary" type="button" data-ng-hide="dataPlace.$edit" data-ng-disabled="formPlace.$invalid" data-ng-click="submitNew({id:dataPlace.id, $address:dataPlace.$address, position:dataPlace.position, name:dataPlace.name, address:dataPlace.$address, category:dataPlace.category, url:dataPlace.url})">Salvar</button>                                
                         </div>
                         
                         
