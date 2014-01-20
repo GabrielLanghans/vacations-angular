@@ -272,7 +272,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                         '<div>'+                        
                             '<h3>Viagem</h3>'+                        
                             '<div data-ng-hide="travel.$show">'+
-                                '<select data-ng-model="dataList.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in dataList.travels" data-ng-change="drawPin()"></select>'+
+                                '<select data-ng-model="dataList.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in dataList.travels" data-ng-change="drawListPin()"></select>'+
                                 '<button type="button" data-ng-click="newTravel()">Nova Viagem</button>'+                                
                                 //'{{dataList.travels[dataList.lastTravel].date}}'+                                
                                 '<button type="button" data-ng-click="editTravel(dataList.travels[dataList.lastTravel].date)">Editar Viagem</button>'+                                
@@ -329,7 +329,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
             
 
-            scope.codeAddress = function(address) {
+            $rootScope.codeAddress = function(address) {
                 var deferred = $q.defer();
                 valGeocode = "";
               //   var getMessages = function() {
@@ -391,8 +391,8 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                 map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
             };
 
-            scope.getPin = function(){
-                var defer = $q.defer();                
+            scope.getListPin = function(){
+                var places = scope.dataList.travels[scope.dataList.lastTravel].places;
 
                 //limpa os pins
                 for (var i = 0; i < pins.length; i++) {
@@ -408,86 +408,235 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                     // pixelOffset : new google.maps.Size(0,-34),
                     // maxWidth: 50
                 });
-                
-                var arrayGeocoder = [];
-                var arrayPosition = [];
-                arrayGeocoder.length = 0;
-                arrayPosition.length = 0;
-                
-                //var deferr = $q.defer();
 
                 
-                for (j in scope.dataList.travels[scope.dataList.lastTravel].places){                    
-                    arrayGeocoder.length = 0;
+                for (i in places){                    
+
+                    lat = places[i].position.split(",")[0];
+                    lng = places[i].position.split(",")[1];
+
+                    marker = new google.maps.Marker({
+                        position : new google.maps.LatLng(lat, lng),
+                        map : map,
+                        pinId : places[i].id,
+                        pinName : places[i].name,
+                        pinAddress : places[i].address,
+                        pinUrl : places[i].url,
+                        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
+                        zIndex: 100
+                    });
+
+                    google.maps.event.addListener(marker, 'mouseover', function() {
+                        infowindow.close(); 
+                        infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
+                        infowindow.open(map, this); 
+                    });
 
                     
-                    if((scope.dataList.travels[scope.dataList.lastTravel].places[j].position == "") || (scope.dataList.travels[scope.dataList.lastTravel].places[j].position == undefined)){
-                        //alert("vazio");
-                        arrayGeocoder.push(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address));
-
-                        console.log("Endereço: "+scope.dataList.travels[scope.dataList.lastTravel].places[j].address);
-                    }
-                    /*else{
-                        deferr.resolve(scope.dataList.travels[scope.dataList.lastTravel].places[j].position);
-                        arrayPosition.push(deferr.promise);   
-                    }*/
-                }                
-
-                $q.all(arrayGeocoder).then(function(responseGeo) {   
-                    //alert(response);
-                    // var billingAccounts = data[0];
-                    // var shippingAccounts = data[1];
-
-                    console.log(responseGeo);
-
-                    cont = 0;
-                    for (i in scope.dataList.travels[scope.dataList.lastTravel].places){                    
-                        /*if((scope.dataList.travels[scope.dataList.lastTravel].places[i].position != "") && (scope.dataList.travels[scope.dataList.lastTravel].places[i].position != undefined)){
-                            lat = scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[0];
-                            lng = scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[1];
+                    google.maps.event.addListener(marker, 'click', function() {
+                        if(scope.route.origin == false){
+                            scope.route.origin = this.position;
+                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
                         }
-                        else if((scope.dataList.travels[scope.dataList.lastTravel].places[i].address != "") && (scope.dataList.travels[scope.dataList.lastTravel].places[i].address != undefined)){
-                            //alert(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[i].address));
-                            // lat = this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[i].address).b;
-                            // lng = this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[i].address).d;
+                        else if(this.getIcon().url != "../images/sprite_pin.png"){
+                            scope.route.origin = false;
+                            scope.route.destination = false;
+                            $rootScope.removeRoute();
 
-                            //console.log(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[i].address));
-                            // console.log(scope.dataList.travels[scope.dataList.lastTravel].places[i].address);
-                            // console.log(lat);
-                            // console.log(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[i].address));
-                            this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[i].address).then(function(response){
-                                console.log(response);
-                                lat = response[0];
-                                lng = response[1];
-                            });
-                            // console.log(lat);
-                        }*/
+                            for (var i = 0; i < pins.length; i++) {
+                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                            }                            
+                        }
+                        else if(scope.route.destination == false){
+                            scope.route.destination = this.position;
+                            this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
 
-                        /*lat = "";
-                        lng = "";
+                            $rootScope.calcRoute();
+                        }
+                        else if(this.getIcon().url != "../images/sprite_pin.png"){
+                            scope.route.destination = false;
+                            this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                        else{
+                            scope.route.origin = false;
+                            scope.route.destination = false;
+                            $rootScope.removeRoute();
 
-                        console.log(cont);
-                        console.log(response[0][cont].b);                        
-                        lat = response[0];
-                        lng = response[1];*/
+                            for (var i = 0; i < pins.length; i++) {
+                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                            }                            
 
-                        // console.log(scope.dataList.travels[scope.dataList.lastTravel].places[i].position);
-                        // console.log(typeof scope.dataList.travels[scope.dataList.lastTravel].places[i].position);
-                        // console.log(responseGeo);
+                            scope.route.origin = this.position;
+                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                    });
 
+                    pins.push(marker);
+
+                    bgPositionX += 40;
+
+                    cont++;                 
+                }
+                return pins;
+            };
+
+            $rootScope.drawListPin = function(){                
+
+                //scope.getPin().then(function(response){
+                    var arrayPins = scope.getListPin();                    
+                    //console.log(response[0]);
+
+                    for(i = 0; i < arrayPins.length; i++){
+                        //console.log(arrayPins[i]);
+                        arrayPins[0].setMap(map);
+                    }
+                //});                
+            }            
+
+            $rootScope.calcRoute = function(){                
+                //console.log(directionsDisplay);
+                directionsDisplay.suppressMarkers = true;
+                directionsDisplay.setMap(map);
+                directionsDisplay.setPanel(document.getElementById('directions-panel'));
+
+                //console.log(scope.route.type);
+
+                
+                var haight = new google.maps.LatLng(51.5034412,-0.119678199999953);
+                var oceanBeach = new google.maps.LatLng(51.4034412,-0.109678199999953);
+
+                var selectedMode = document.getElementById('mode').value;
+                var request = {
+                    durationInTraffic: true,
+                    origin: scope.route.origin,
+                    destination: scope.route.destination,
+                    // Note that Javascript allows us to access the constant
+                    // using square brackets and a string value as its
+                    // "property."
+                    travelMode: google.maps.TravelMode[selectedMode]
+                };
+
+
+
+                directionsService.route(request, function(response, status) {
+                    if (status == google.maps.DirectionsStatus.OK) {
+                        directionsDisplay.setDirections(response);
+                    }
+                });
+
+                
+            }
+
+            $rootScope.removeRoute = function(){
+                directionsDisplay.setMap();
+                directionsDisplay.setPanel();
+            };
+
+            $rootScope.setCenter = function(position){
+                map.setCenter(new google.maps.LatLng(position.split(",")[0], position.split(",")[1]));
+                map.setZoom(15);
+            };
+
+            $rootScope.drawNewPin = function(pinData){
+                //$rootScope.drawNewPin({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url});
+
+                console.log(pinData)
+
+                var defer = $q.defer();                
+                
+                //bgPositionX = 0;
+
+                //cria a tooltip do pin
+                infowindow = new google.maps.InfoWindow({
+                    maxWidth: 500
+                    // position : new google.maps.LatLng(this.position.jb,this.position.kb),
+                    // pixelOffset : new google.maps.Size(0,-34),
+                    // maxWidth: 50
+                });
+                
+                //$rootScope.codeAddress(pinData.address).then(function(responseGeo) {                
+                    
+                    //console.log(responseGeo);
+
+                    lat = pinData.position.split(",")[0];
+                    lng = pinData.position.split(",")[1];
+
+                    marker = new google.maps.Marker({
+                        position : new google.maps.LatLng(lat, lng),
+                        map : map,
+                        pinId : pinData.id,
+                        pinName : pinData.name,
+                        pinAddress : pinData.address,
+                        pinUrl : pinData.url,
+                        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
+                        zIndex: 100
+                    });
+
+                    google.maps.event.addListener(marker, 'mouseover', function() {
+                        infowindow.close(); 
+                        infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
+                        infowindow.open(map, this); 
+                    });
+
+                    
+                    google.maps.event.addListener(marker, 'click', function() {
+                        if(scope.route.origin == false){
+                            scope.route.origin = this.position;
+                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                        else if(this.getIcon().url != "../images/sprite_pin.png"){
+                            scope.route.origin = false;
+                            scope.route.destination = false;
+                            $rootScope.removeRoute();
+
+                            for (var i = 0; i < pins.length; i++) {
+                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                            }                            
+                        }
+                        else if(scope.route.destination == false){
+                            scope.route.destination = this.position;
+                            this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
+
+                            $rootScope.calcRoute();
+                        }
+                        else if(this.getIcon().url != "../images/sprite_pin.png"){
+                            scope.route.destination = false;
+                            this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                        else{
+                            scope.route.origin = false;
+                            scope.route.destination = false;
+                            $rootScope.removeRoute();
+
+                            for (var i = 0; i < pins.length; i++) {
+                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                            }                            
+
+                            scope.route.origin = this.position;
+                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                    });
+
+                    pins.push(marker);
+
+                    bgPositionX += 40;
+
+                    /*var arrayPins = scope.getListPin();                    
+                    //console.log(response[0]);
+
+                    for(i = 0; i < arrayPins.length; i++){
+                        //console.log(arrayPins[i]);
+                        arrayPins[0].setMap(map);
+                    }*/
+
+                    marker.setMap(map);
+
+
+
+                    /*cont = 0;
+                    for (i in scope.dataList.travels[scope.dataList.lastTravel].places){                    
+      
                         if((scope.dataList.travels[scope.dataList.lastTravel].places[i].position == "") || (scope.dataList.travels[scope.dataList.lastTravel].places[i].position == undefined)){
-                            /*console.log("position vazio");                        
-                            arr.push(this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address));
-                            */
-                            // cria position no banco
-                            
-                            // this.codeAddress(scope.dataList.travels[scope.dataList.lastTravel].places[j].address).then(function(teste){
-                            //     console.log(teste);
-                            // });
-
-                            //console.log("position vazio");                            
-                            //console.log("response[0][cont].b: "+response[0][cont].b);
-
 
                             console.log(responseGeo[0].lat());
                             console.log(responseGeo[0].lng());
@@ -495,16 +644,10 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                             lat = responseGeo[0].lat();
                             lng = responseGeo[0].lng();
 
-                            //console.log(responseGeo[0][0].geometry.location.lat());
 
                             coords = lat +","+ lng; 
-                            //var teste = responseGeo[0][0][0] +","+ responseGeo[0][0][1];
-                            //vacationsData.submitPosition($rootScope.user.uid, scope.dataList.lastTravel, scope.dataList.travels[scope.dataList.lastTravel].places[i].id, coords);
                             vacationsData.submitPosition($rootScope.user.uid, scope.dataList.lastTravel, scope.dataList.travels[scope.dataList.lastTravel].places[i].id, coords);
 
-                            
-                            // lat = response[0][0].split(",")[0];
-                            // lng = response[0][0].split(",")[1];                            
                         }
                         else{
                             lat = scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[0];
@@ -575,80 +718,110 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
                         defer.resolve(pins);                        
                     }
+                    */
 
-                });
+                //});
                 
-                return defer.promise;
-            };
-
-            $rootScope.drawPin = function(){                
-
-                scope.getPin().then(function(response){
-                    var arrayPins = response[0];                    
-                    //console.log(response[0]);
-
-                    for(i = 0; i < arrayPins.length; i++){
-                        //console.log(arrayPins[i]);
-                        arrayPins[0].setMap(map);
-                    }
-                });
-
+ 
                 
             }
 
-            
+            $rootScope.drawEditPin = function(pinData){
+                //$rootScope.drawNewPin({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url});
 
-            $rootScope.calcRoute = function(){                
-                //console.log(directionsDisplay);
-                directionsDisplay.suppressMarkers = true;
-                directionsDisplay.setMap(map);
-                directionsDisplay.setPanel(document.getElementById('directions-panel'));
+                console.log(pinData)
 
-                //console.log(scope.route.type);
-
+                /*var defer = $q.defer();                
                 
-                var haight = new google.maps.LatLng(51.5034412,-0.119678199999953);
-                var oceanBeach = new google.maps.LatLng(51.4034412,-0.109678199999953);
+                //bgPositionX = 0;
 
-                var selectedMode = document.getElementById('mode').value;
-                var request = {
-                    durationInTraffic: true,
-                    origin: scope.route.origin,
-                    destination: scope.route.destination,
-                    // Note that Javascript allows us to access the constant
-                    // using square brackets and a string value as its
-                    // "property."
-                    travelMode: google.maps.TravelMode[selectedMode]
-                };
-
-
-
-                directionsService.route(request, function(response, status) {
-                    if (status == google.maps.DirectionsStatus.OK) {
-                        directionsDisplay.setDirections(response);
-                    }
+                //cria a tooltip do pin
+                infowindow = new google.maps.InfoWindow({
+                    maxWidth: 500
+                    // position : new google.maps.LatLng(this.position.jb,this.position.kb),
+                    // pixelOffset : new google.maps.Size(0,-34),
+                    // maxWidth: 50
                 });
-
                 
+                scope.codeAddress(pinData.address).then(function(responseGeo) {                
+                    
+                    console.log(responseGeo);
+
+                    lat = responseGeo.lat();
+                    lng = responseGeo.lng();
+
+                    marker = new google.maps.Marker({
+                        position : new google.maps.LatLng(lat, lng),
+                        map : map,
+                        pinId : pinData.id,
+                        pinName : pinData.name,
+                        pinAddress : pinData.address,
+                        pinUrl : pinData.url,
+                        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
+                        zIndex: 100
+                    });
+
+                    google.maps.event.addListener(marker, 'mouseover', function() {
+                        infowindow.close(); 
+                        infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
+                        infowindow.open(map, this); 
+                    });
+
+                    
+                    google.maps.event.addListener(marker, 'click', function() {
+                        if(scope.route.origin == false){
+                            scope.route.origin = this.position;
+                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                        else if(this.getIcon().url != "../images/sprite_pin.png"){
+                            scope.route.origin = false;
+                            scope.route.destination = false;
+                            $rootScope.removeRoute();
+
+                            for (var i = 0; i < pins.length; i++) {
+                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                            }                            
+                        }
+                        else if(scope.route.destination == false){
+                            scope.route.destination = this.position;
+                            this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
+
+                            $rootScope.calcRoute();
+                        }
+                        else if(this.getIcon().url != "../images/sprite_pin.png"){
+                            scope.route.destination = false;
+                            this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                        else{
+                            scope.route.origin = false;
+                            scope.route.destination = false;
+                            $rootScope.removeRoute();
+
+                            for (var i = 0; i < pins.length; i++) {
+                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                            }                            
+
+                            scope.route.origin = this.position;
+                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                        }
+                    });
+
+                    pins.push(marker);
+
+                    bgPositionX += 40;               
+
+                    marker.setMap(map);
+                });
+*/
             }
 
-            $rootScope.removeRoute = function(){
-                directionsDisplay.setMap();
-                directionsDisplay.setPanel();
-            };
-
-            $rootScope.setCenter = function(position){
-                map.setCenter(new google.maps.LatLng(position.split(",")[0], position.split(",")[1]));
-                map.setZoom(15);
-            };
-            
                     
             if(scope.user){
                 //console.log("scope.user");
                 google.maps.event.addDomListener(window, 'load', scope.initializeMap());
                 
                 
-                $rootScope.drawPin();
+                $rootScope.drawListPin();
                 
                 
             }
@@ -683,6 +856,9 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     */
 
     //console.log($rootScope);   
+    var lat,
+        lng,
+        coords;
 
     $scope.dataPlace = {$show: false, $edit: false, $address: "", position: "", id: "", name: "", address: "", category:"", url: ""};
 
@@ -703,9 +879,22 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
     $scope.submitEdit = function(ref) {
         if(ref.address != ref.$address){
-            ref.position = "";
+            //ref.position = "";
+            console.log("mudou end");
+
+            $rootScope.codeAddress(ref.address).then(function(responseGeo) {                
+                lat = responseGeo.lat();
+                lng = responseGeo.lng();
+                coords = lat +","+ lng;
+
+                vacationsData.submitEdit($rootScope.user.uid, $scope.dataList.lastTravel, ref, coords);
+            });
         }
-        vacationsData.submitEdit($rootScope.user.uid, $scope.dataList.lastTravel, ref);        
+        else{
+            console.log("não mudou end");
+            coords = ref.position;
+            vacationsData.submitEdit($rootScope.user.uid, $scope.dataList.lastTravel, ref, coords);            
+        }
 
         this.cancel();
     }
@@ -715,7 +904,17 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     }
 
     $scope.submitNew = function(ref) {   
-        vacationsData.submitNew($rootScope.user.uid, $scope.dataList.lastTravel, ref);
+        console.log(ref);
+
+        $rootScope.codeAddress(ref.address).then(function(responseGeo) {
+            lat = responseGeo.lat();
+            lng = responseGeo.lng();
+            coords = lat +","+ lng;
+
+            vacationsData.submitNew($rootScope.user.uid, $scope.dataList.lastTravel, ref, coords);
+        });
+
+        //vacationsData.submitNew($rootScope.user.uid, $scope.dataList.lastTravel, ref);
 
         this.cancel();
     }
@@ -732,42 +931,39 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         var idRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ id);
         idRef.remove(function(){
             console.log("Deletado!!!")
-            $rootScope.drawPin();
+            $rootScope.drawListPin();
         });
     },
     this.edit = function(data) {
         storeData = {$show: true, $edit: true, $address: data.address, position: data.position, id: data.id, name: data.name, address: data.address, category: data.category, url: data.url};
         return storeData;
     },
-    this.submitEdit = function(user, travel, data) {
-        var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ data.id);
-        placeRef.update({position: data.position, name: data.name, address: data.address, category: data.category, url: data.url}, function(){
+    this.submitEdit = function(user, travel, place, data) {
+        console.log(place);
+        console.log(data);
+
+        var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ place.id);      
+
+        placeRef.update({position: data, name: place.name, address: place.address, category: place.category, url: place.url}, function(){
             console.log("Editado!!!")
-            $rootScope.drawPin();            
+            $rootScope.drawListPin();
         });
     },
     this.new = function() {
         storeData = {$show: true, $edit: false, $address: "", position: "", id: "", name: "", address: "", category: "", url: ""};
         return storeData;
     },
-    this.submitNew = function(user, travel, data) {
+    this.submitNew = function(user, travel, data, coords) {
         var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places");
         var newPushRef = placeRef.push();
 
-        newPushRef.set({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url}, function(){
-            console.log("Adicionado!!!")
-            $rootScope.drawPin();            
-        });
-    },
-    this.submitPosition = function(user, travel, place, data) {
-        console.log(place);
         console.log(data);
 
-        var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ place);
-        placeRef.update({position: data}, function(){
-            console.log("Posição Editado!!!")
+        newPushRef.set({position: coords, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url}, function(){
+            console.log("Adicionado!!!")
+            $rootScope.drawNewPin({position: coords, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url});
         });
-    },
+    },    
     this.cancelTravel = function() {
         storeData = {$show: false, $edit: false, date: ""};
         return storeData;
@@ -808,7 +1004,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         var idRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel);
         idRef.remove(function(){
             console.log("Travel Deletado!!!")
-            $rootScope.drawPin();
+            $rootScope.drawListPin();
         });
 
         var lastTravelRef = fireFactory.firebaseRef("users/" + user);
