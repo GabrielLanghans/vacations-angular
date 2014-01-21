@@ -1,5 +1,8 @@
 'use strict';
 
+/*
+ *  factory
+ */
 vacationsApp.factory('User', function ($rootScope) {
     var userResponse = [];
 
@@ -13,6 +16,22 @@ vacationsApp.factory('User', function ($rootScope) {
         }
     };
 });
+
+vacationsApp.factory('Map', function ($rootScope) {
+    var map;
+
+    return {
+        setMap:function (data) {
+            map = data;
+            //console.log(data);
+        },
+        getMap:function () {
+            return map;
+        }
+    };
+});
+
+
 
 vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fireFactory, User){
     //$rootScope.status = {log: false, name: "", username: ""};
@@ -92,7 +111,7 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
             $location.path('/');
         }
-        $scope.$apply();
+////////////////////////////////////////$scope.$apply();
     });
 
     $scope.login = function(){
@@ -101,6 +120,8 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
     $scope.logout = function(){
         auth.logout();
     }
+
+    console.log($rootScope.user);
 })
 
 vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams, User, fireFactory, vacationsData){
@@ -244,7 +265,7 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 });
 
 
-vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
+vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData, Map) {
     return {
         restrict: "A",       
         replace: true, 
@@ -303,7 +324,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
         
         
         link: function (scope, elem, attrs) {
-            var map,
+            var //map,
                 marker,
                 infowindow,
                 geocoder,
@@ -328,6 +349,95 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
             geocoder = new google.maps.Geocoder();        
 
             
+
+
+            $rootScope.drawNewPin = function(pinData){
+                //$rootScope.drawNewPin({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url});
+
+                console.log(pinData)
+
+                var defer = $q.defer();                
+                
+                //bgPositionX = 0;
+
+                //cria a tooltip do pin
+                infowindow = new google.maps.InfoWindow({
+                    maxWidth: 500
+                    // position : new google.maps.LatLng(this.position.jb,this.position.kb),
+                    // pixelOffset : new google.maps.Size(0,-34),
+                    // maxWidth: 50
+                });
+                
+             
+
+                lat = pinData.position.split(",")[0];
+                lng = pinData.position.split(",")[1];
+
+                marker = new google.maps.Marker({
+                    position : new google.maps.LatLng(lat, lng),
+                    map : $rootScope.map,
+                    pinId : pinData.id,
+                    pinName : pinData.name,
+                    pinAddress : pinData.address,
+                    pinUrl : pinData.url,
+                    icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
+                    zIndex: 100
+                });
+
+                google.maps.event.addListener(marker, 'mouseover', function() {
+                    infowindow.close(); 
+                    infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
+                    infowindow.open($rootScope.map, this); 
+                });
+
+                
+                google.maps.event.addListener(marker, 'click', function() {
+                    if(scope.route.origin == false){
+                        scope.route.origin = this.position;
+                        this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                    }
+                    else if(this.getIcon().url != "../images/sprite_pin.png"){
+                        scope.route.origin = false;
+                        scope.route.destination = false;
+                        $rootScope.removeRoute();
+
+                        for (var i = 0; i < pins.length; i++) {
+                            pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                        }                            
+                    }
+                    else if(scope.route.destination == false){
+                        scope.route.destination = this.position;
+                        this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
+
+                        $rootScope.calcRoute();
+                    }
+                    else if(this.getIcon().url != "../images/sprite_pin.png"){
+                        scope.route.destination = false;
+                        this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                    }
+                    else{
+                        scope.route.origin = false;
+                        scope.route.destination = false;
+                        $rootScope.removeRoute();
+
+                        for (var i = 0; i < pins.length; i++) {
+                            pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
+                        }                            
+
+                        scope.route.origin = this.position;
+                        this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
+                    }
+                });
+
+                pins.push(marker);
+
+                bgPositionX += 40;
+
+                marker.setMap($rootScope.map);           
+
+                $rootScope.setCenter(pinData.position);
+            }
+
 
             $rootScope.codeAddress = function(address) {
                 var deferred = $q.defer();
@@ -388,7 +498,11 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                 };
                 
                 directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
-                map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+                //map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+
+                var iniMap = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+                Map.setMap(iniMap);
+                
             };
 
             scope.getListPin = function(){
@@ -417,7 +531,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
                     marker = new google.maps.Marker({
                         position : new google.maps.LatLng(lat, lng),
-                        map : map,
+                        map : $rootScope.map,
                         pinId : places[i].id,
                         pinName : places[i].name,
                         pinAddress : places[i].address,
@@ -429,7 +543,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
                     google.maps.event.addListener(marker, 'mouseover', function() {
                         infowindow.close(); 
                         infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-                        infowindow.open(map, this); 
+                        infowindow.open($rootScope.map, this); 
                     });
 
                     
@@ -488,7 +602,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
 
                     for(i = 0; i < arrayPins.length; i++){
                         //console.log(arrayPins[i]);
-                        arrayPins[0].setMap(map);
+                        arrayPins[0].setMap($rootScope.map);
                     }
                 //});                
             }            
@@ -496,7 +610,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
             $rootScope.calcRoute = function(){                
                 //console.log(directionsDisplay);
                 directionsDisplay.suppressMarkers = true;
-                directionsDisplay.setMap(map);
+                directionsDisplay.setMap($rootScope.map);
                 directionsDisplay.setPanel(document.getElementById('directions-panel'));
 
                 //console.log(scope.route.type);
@@ -533,292 +647,16 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData) {
             };
 
             $rootScope.setCenter = function(position){
-                map.setCenter(new google.maps.LatLng(position.split(",")[0], position.split(",")[1]));
-                map.setZoom(15);
-            };
+                $rootScope.map.setCenter(new google.maps.LatLng(position.split(",")[0], position.split(",")[1]));
+                $rootScope.map.setZoom(15);
+            };           
 
-            $rootScope.drawNewPin = function(pinData){
-                //$rootScope.drawNewPin({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url});
-
-                console.log(pinData)
-
-                var defer = $q.defer();                
-                
-                //bgPositionX = 0;
-
-                //cria a tooltip do pin
-                infowindow = new google.maps.InfoWindow({
-                    maxWidth: 500
-                    // position : new google.maps.LatLng(this.position.jb,this.position.kb),
-                    // pixelOffset : new google.maps.Size(0,-34),
-                    // maxWidth: 50
-                });
-                
-                //$rootScope.codeAddress(pinData.address).then(function(responseGeo) {                
-                    
-                    //console.log(responseGeo);
-
-                    lat = pinData.position.split(",")[0];
-                    lng = pinData.position.split(",")[1];
-
-                    marker = new google.maps.Marker({
-                        position : new google.maps.LatLng(lat, lng),
-                        map : map,
-                        pinId : pinData.id,
-                        pinName : pinData.name,
-                        pinAddress : pinData.address,
-                        pinUrl : pinData.url,
-                        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
-                        zIndex: 100
-                    });
-
-                    google.maps.event.addListener(marker, 'mouseover', function() {
-                        infowindow.close(); 
-                        infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-                        infowindow.open(map, this); 
-                    });
-
-                    
-                    google.maps.event.addListener(marker, 'click', function() {
-                        if(scope.route.origin == false){
-                            scope.route.origin = this.position;
-                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                        else if(this.getIcon().url != "../images/sprite_pin.png"){
-                            scope.route.origin = false;
-                            scope.route.destination = false;
-                            $rootScope.removeRoute();
-
-                            for (var i = 0; i < pins.length; i++) {
-                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                            }                            
-                        }
-                        else if(scope.route.destination == false){
-                            scope.route.destination = this.position;
-                            this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
-
-                            $rootScope.calcRoute();
-                        }
-                        else if(this.getIcon().url != "../images/sprite_pin.png"){
-                            scope.route.destination = false;
-                            this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                        else{
-                            scope.route.origin = false;
-                            scope.route.destination = false;
-                            $rootScope.removeRoute();
-
-                            for (var i = 0; i < pins.length; i++) {
-                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                            }                            
-
-                            scope.route.origin = this.position;
-                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                    });
-
-                    pins.push(marker);
-
-                    bgPositionX += 40;
-
-                    /*var arrayPins = scope.getListPin();                    
-                    //console.log(response[0]);
-
-                    for(i = 0; i < arrayPins.length; i++){
-                        //console.log(arrayPins[i]);
-                        arrayPins[0].setMap(map);
-                    }*/
-
-                    marker.setMap(map);
-
-
-
-                    /*cont = 0;
-                    for (i in scope.dataList.travels[scope.dataList.lastTravel].places){                    
-      
-                        if((scope.dataList.travels[scope.dataList.lastTravel].places[i].position == "") || (scope.dataList.travels[scope.dataList.lastTravel].places[i].position == undefined)){
-
-                            console.log(responseGeo[0].lat());
-                            console.log(responseGeo[0].lng());
-
-                            lat = responseGeo[0].lat();
-                            lng = responseGeo[0].lng();
-
-
-                            coords = lat +","+ lng; 
-                            vacationsData.submitPosition($rootScope.user.uid, scope.dataList.lastTravel, scope.dataList.travels[scope.dataList.lastTravel].places[i].id, coords);
-
-                        }
-                        else{
-                            lat = scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[0];
-                            lng = scope.dataList.travels[scope.dataList.lastTravel].places[i].position.split(",")[1];
-                        }
-
-                        marker = new google.maps.Marker({
-                            position : new google.maps.LatLng(lat, lng),
-                            map : map,
-                            pinId : scope.dataList.travels[scope.dataList.lastTravel].places[i].id,
-                            pinName : scope.dataList.travels[scope.dataList.lastTravel].places[i].name,
-                            pinAddress : scope.dataList.travels[scope.dataList.lastTravel].places[i].address,
-                            pinUrl : scope.dataList.travels[scope.dataList.lastTravel].places[i].url,
-                            icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
-                            zIndex: 100
-                        });
-
-                        google.maps.event.addListener(marker, 'mouseover', function() {
-                            infowindow.close(); 
-                            infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-                            infowindow.open(map, this); 
-                        });
-
-                        
-                        google.maps.event.addListener(marker, 'click', function() {
-                            if(scope.route.origin == false){
-                                scope.route.origin = this.position;
-                                this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                            }
-                            else if(this.getIcon().url != "../images/sprite_pin.png"){
-                                scope.route.origin = false;
-                                scope.route.destination = false;
-                                $rootScope.removeRoute();
-
-                                for (var i = 0; i < pins.length; i++) {
-                                    pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                                }                            
-                            }
-                            else if(scope.route.destination == false){
-                                scope.route.destination = this.position;
-                                this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
-
-                                $rootScope.calcRoute();
-                            }
-                            else if(this.getIcon().url != "../images/sprite_pin.png"){
-                                scope.route.destination = false;
-                                this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                            }
-                            else{
-                                scope.route.origin = false;
-                                scope.route.destination = false;
-                                $rootScope.removeRoute();
-
-                                for (var i = 0; i < pins.length; i++) {
-                                    pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                                }                            
-
-                                scope.route.origin = this.position;
-                                this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                            }
-                        });
-
-                        pins.push(marker);
-
-                        bgPositionX += 40;
-
-                        cont++;
-
-                        defer.resolve(pins);                        
-                    }
-                    */
-
-                //});
-                
- 
-                
-            }
-
-            $rootScope.drawEditPin = function(pinData){
-                //$rootScope.drawNewPin({position: data.position, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url});
-
-                console.log(pinData)
-
-                /*var defer = $q.defer();                
-                
-                //bgPositionX = 0;
-
-                //cria a tooltip do pin
-                infowindow = new google.maps.InfoWindow({
-                    maxWidth: 500
-                    // position : new google.maps.LatLng(this.position.jb,this.position.kb),
-                    // pixelOffset : new google.maps.Size(0,-34),
-                    // maxWidth: 50
-                });
-                
-                scope.codeAddress(pinData.address).then(function(responseGeo) {                
-                    
-                    console.log(responseGeo);
-
-                    lat = responseGeo.lat();
-                    lng = responseGeo.lng();
-
-                    marker = new google.maps.Marker({
-                        position : new google.maps.LatLng(lat, lng),
-                        map : map,
-                        pinId : pinData.id,
-                        pinName : pinData.name,
-                        pinAddress : pinData.address,
-                        pinUrl : pinData.url,
-                        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
-                        zIndex: 100
-                    });
-
-                    google.maps.event.addListener(marker, 'mouseover', function() {
-                        infowindow.close(); 
-                        infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-                        infowindow.open(map, this); 
-                    });
-
-                    
-                    google.maps.event.addListener(marker, 'click', function() {
-                        if(scope.route.origin == false){
-                            scope.route.origin = this.position;
-                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                        else if(this.getIcon().url != "../images/sprite_pin.png"){
-                            scope.route.origin = false;
-                            scope.route.destination = false;
-                            $rootScope.removeRoute();
-
-                            for (var i = 0; i < pins.length; i++) {
-                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                            }                            
-                        }
-                        else if(scope.route.destination == false){
-                            scope.route.destination = this.position;
-                            this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
-
-                            $rootScope.calcRoute();
-                        }
-                        else if(this.getIcon().url != "../images/sprite_pin.png"){
-                            scope.route.destination = false;
-                            this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                        else{
-                            scope.route.origin = false;
-                            scope.route.destination = false;
-                            $rootScope.removeRoute();
-
-                            for (var i = 0; i < pins.length; i++) {
-                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                            }                            
-
-                            scope.route.origin = this.position;
-                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                    });
-
-                    pins.push(marker);
-
-                    bgPositionX += 40;               
-
-                    marker.setMap(map);
-                });
-*/
-            }
 
                     
             if(scope.user){
                 //console.log("scope.user");
                 google.maps.event.addDomListener(window, 'load', scope.initializeMap());
+                $rootScope.map = Map.getMap(); 
                 
                 
                 $rootScope.drawListPin();
@@ -846,7 +684,7 @@ vacationsApp.controller("NavCtrl", function($scope, $rootScope){
     }    
 });
 
-vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFactory, vacationsData){
+vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFactory, vacationsData, Map){
 
     //$rootScope.user = User.getUser();
 
@@ -855,7 +693,10 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     });
     */
 
-    //console.log($rootScope);   
+    //console.log($rootScope);  
+
+    $rootScope.map = Map.getMap(); 
+
     var lat,
         lng,
         coords;
@@ -918,6 +759,46 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
         this.cancel();
     }
+
+
+    $scope.autocomplete = function(){
+        var input = (document.getElementById('field-address')),
+            address;
+
+        var autocomplete = new google.maps.places.Autocomplete(input);
+        autocomplete.bindTo('bounds', $rootScope.map);
+
+
+            google.maps.event.addListener(autocomplete, 'place_changed', function() {
+                //$rootScope.$apply(function() {
+                var place = autocomplete.getPlace();
+
+                if (!place.geometry) {
+                    return;
+                }
+
+                if (place.address_components) {
+                    address = [
+                        (place.address_components[0] && place.address_components[0].short_name || ''),
+                        (place.address_components[1] && place.address_components[1].short_name || ''),
+                        (place.address_components[2] && place.address_components[2].short_name || '')
+                    ].join(' ');
+                }
+
+                // console.log($scope.dataPlace.$address);
+                // console.log(address);
+                // console.log(place);
+                // console.log(place.name +", "+ address);
+                $rootScope.$apply(function() {
+                    $scope.dataPlace.$address = place.name +", "+ address;
+                    $scope.dataPlace.name = place.name;
+                });
+            });
+        //});
+    }
+
+    $scope.autocomplete();
+
 });
 
 vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
@@ -930,7 +811,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
     this.delete = function (user, travel, id) {
         var idRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ id);
         idRef.remove(function(){
-            console.log("Deletado!!!")
+            console.log("Deletado!!!");
             $rootScope.drawListPin();
         });
     },
@@ -945,7 +826,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         var placeRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ place.id);      
 
         placeRef.update({position: data, name: place.name, address: place.address, category: place.category, url: place.url}, function(){
-            console.log("Editado!!!")
+            console.log("Editado!!!");
             $rootScope.drawListPin();
         });
     },
@@ -960,7 +841,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         console.log(data);
 
         newPushRef.set({position: coords, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url}, function(){
-            console.log("Adicionado!!!")
+            console.log("Adicionado!!!");
             $rootScope.drawNewPin({position: coords, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url});
         });
     },    
@@ -975,12 +856,12 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
     this.submitEditTravel = function(user, travel, data) {
         var lastTravelRef = fireFactory.firebaseRef("users/" + user);
         lastTravelRef.update({lastTravel: travel}, function(){
-            console.log("Last Travel Editado!!!")
+            console.log("Last Travel Editado!!!");
         });
 
         var travelRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel);
         travelRef.update({date: data.date}, function(){
-            console.log("Travel Editado!!!")
+            console.log("Travel Editado!!!");
         });
     },
     this.newTravel = function() {
@@ -992,24 +873,24 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         var newPushRef = travelRef.push();
 
         newPushRef.set({id: newPushRef.name(), date: data.date, places: ""}, function(){
-            console.log("Travel Adicionado!!!")
+            console.log("Travel Adicionado!!!");
         });
 
         var lastTravelRef = fireFactory.firebaseRef("users/" + user);
         lastTravelRef.update({lastTravel: newPushRef.name()}, function(){
-            console.log("Last Travel Adicionado!!!")
+            console.log("Last Travel Adicionado!!!");
         });
     },
     this.deleteTravel = function (user, travel, data) {
         var idRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel);
         idRef.remove(function(){
-            console.log("Travel Deletado!!!")
+            console.log("Travel Deletado!!!");
             $rootScope.drawListPin();
         });
 
         var lastTravelRef = fireFactory.firebaseRef("users/" + user);
         lastTravelRef.update({lastTravel: data}, function(){
-            console.log("Last Travel Editado!!!")
+            console.log("Last Travel Editado!!!");
         });
 
 
@@ -1019,6 +900,9 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
 });
 
 
+/*
+ *  filter
+ */
 vacationsApp.filter("toArray", function(){
     return function(obj) {
         var result = [];

@@ -16,6 +16,11 @@
 	
 	HOME AUTH
 	<div data-draw-map></div>
+ 
+    <!-- <div style="width:500px; height:200px; background:#fff; position:absolute; top:100px; left:100px; -webkit-filter:blur(1px); opacity:1;">
+        <p>abs</p>
+        <p>lorem ipsum</p>
+    </div>    -->
     
     <div class="container" data-ng-controller="NavCtrl">
         <ul class="nav nav-tabs">
@@ -55,24 +60,24 @@
                 <button data-ng-hide="dataPlace.$show" class="btn btn-primary pull-right" type="button" data-ng-click="new()">Novo</button>
                 
                 <div class="form-places" data-ng-show="dataPlace.$show">
-                    <form name="formPlace">
-                        <div class="form-group" data-ng-class="{error: formPlace.name.$invalid && formPlace.name.$dirty}">
-
-                            <!-- {show: false, position: "", id: "", name: "", address: "", url: ""}; -->
-
-                            <label class="control-label">Nome</label>
-                            <input class="form-control" type="text" name="name" value="{{dataPlace.name}}" data-ng-model="dataPlace.name" required>
-                        </div>
+                    <form name="formPlace">                        
                         <div class="form-group" data-ng-class="{error: formPlace.address.$invalid && formPlace.address.$dirty}">
-                            <label class="control-label">Endereço</label>
-                            <input class="form-control" type="text" name="address" value="{{dataPlace.address}}" data-ng-model="dataPlace.$address" required>
+                            <label class="control-label">Localização</label>
+                            <input id="field-address" class="form-control" type="text" name="address" value="{{dataPlace.address}}" data-ng-model="dataPlace.$address" required>
                             $address: {{dataPlace.$address}}<br>
                             address: {{dataPlace.address}}
+                        </div>
+
+                                                
+                        <div class="form-group" data-ng-class="{error: formPlace.name.$invalid && formPlace.name.$dirty}">
+                            <label class="control-label">Nome</label>
+                            <input class="form-control" type="text" name="name" value="{{dataPlace.name}}" data-ng-model="dataPlace.name" required>
                         </div>
                         <div class="form-group">
                             <label class="control-label">Position</label>
                             <input class="form-control" type="text" name="position" value="{{dataPlace.position}}" data-ng-model="dataPlace.position" disabled>                            
                         </div>
+                        
                         
                         <div class="form-group">
                             <label class="control-label">Tipo</label>
@@ -110,6 +115,16 @@
                 ccc
             </div>
         </div>
+        
+        <svg height="110" width="110">
+          <defs>
+            <filter id="f1" x="0" y="0">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="15" />
+            </filter>
+          </defs>
+          <rect width="90" height="90" stroke="green" stroke-width="3" fill="yellow" filter="url(#f1)" />
+          Sorry, your browser does not support inline SVG.  
+        </svg>
         
     </div>
 
