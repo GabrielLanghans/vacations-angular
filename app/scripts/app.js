@@ -3,10 +3,9 @@
 // var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAnimate", "google-maps"]);
 var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAnimate"]);
 
-vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) {
+vacationsApp.factory("fireFactory", function($rootScope, $timeout, $firebase) {
     var baseUrl = 'https://vacations-initial.firebaseio.com/',
-        path = "",
-        scopeName = "";
+        path = "";
 
     $rootScope.dataList = [];
             
@@ -16,19 +15,24 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, angularFire) 
             return new Firebase(path);
         },
         dataRef: function(path, name) {            
-            if(name == undefined){
-              scopeName = "dataList";
-            }
-            else{
-              scopeName = name;
-            }
-
             path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;     
 
             var ref = new Firebase(path);
-            var promise = angularFire(ref, $rootScope, scopeName);
 
-            return promise;
+            if(name == undefined){
+              $rootScope.dataList = $firebase(ref);
+            }
+            else{
+              $rootScope[name] = $firebase(ref);
+            }
+
+            
+            // var promise = $firebase(ref);
+            // var promise = $firebase(ref, $rootScope, scopeName);
+            // return promise;
+          
+
+            return $rootScope;
         }
     };
 });
@@ -46,6 +50,7 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
               //redirectTo: '/';
             }
             else{
+              console.log(fireFactory.dataRef("place", "placeData"));
               return fireFactory.dataRef("place", "placeData");
             }
           }
@@ -59,6 +64,8 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
             if($rootScope.user){ 
               // fireFactory.dataRef("place/category", "placeRef").then(function(){                 
               // });
+
+            console.log(fireFactory.dataRef("users/" + $rootScope.user.uid));
 
               return fireFactory.dataRef("users/" + $rootScope.user.uid);  
             }

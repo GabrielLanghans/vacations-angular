@@ -111,7 +111,6 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
             $location.path('/');
         }
-////////////////////////////////////////$scope.$apply();
     });
 
     $scope.login = function(){
@@ -201,6 +200,9 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
     }
 
     // console.log($scope.dataList.lastTravel);
+
+    console.log($rootScope);
+
     if(($scope.dataList.lastTravel == undefined) || ($scope.dataList.lastTravel == "")){
         //alert('($scope.dataList.lastTravel == undefined) || ($scope.dataList.lastTravel == "")')
         $rootScope.travel.$show = true;

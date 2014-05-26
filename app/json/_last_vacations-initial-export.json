@@ -1,0 +1,140 @@
+{
+  "users" : {
+    "facebook:100002807237878" : {
+      "uid" : "facebook:100002807237878",
+      "name" : "Gabriel Langhans",
+      "lastTravel" : "-Z1hOuUqwertyuiopasa",
+      "travels" : {
+        "-Z1hOuUqwertyuiopasa" : {
+          "date" : "26/10/2013",
+          "places" : {
+            "-JDjgMKqdi5e0OasOt9o" : {
+              "address" : "Marylebone Rd, London NW1 5LR, Reino Unido",
+              "position" : "51.5224461,-0.15551529999993363",
+              "url" : "",
+              "category" : "-004",
+              "name" : "Museu Madame Tussauds",
+              "id" : "-JDjgMKqdi5e0OasOt9o"
+            },
+            "-JDocRnXLvC9pPAYgO4u" : {
+              "address" : "London South Bank University, Borough Road, Londres, Reino Unido",
+              "position" : "51.498831,-0.10182699999995748",
+              "url" : "",
+              "category" : "-001",
+              "name" : "Universidade",
+              "id" : "-JDocRnXLvC9pPAYgO4u"
+            },
+            "-JDpNPOG0Qb2It20NYA5" : {
+              "address" : "rua rio amazonas, 1346, rio grande",
+              "position" : "-32.0527524,-52.14229209999996",
+              "url" : "",
+              "category" : "",
+              "name" : "Minha Casa",
+              "id" : "-JDpNPOG0Qb2It20NYA5"
+            },
+            "-JDpMSUJZYlYT5JrD4b4" : {
+              "address" : "Oxford St, Oxford St Gt Lon GB",
+              "position" : "51.513783,-0.15669579999996586",
+              "url" : "",
+              "category" : "",
+              "name" : "Oxford St",
+              "id" : "-JDpMSUJZYlYT5JrD4b4"
+            },
+            "-JFvhrs9SgLjZleWMKVn" : {
+              "address" : "Big Ben, Westminster GB SW1A 0AA",
+              "position" : "51.5007282,-0.12462630000004538",
+              "url" : "",
+              "category" : "-005",
+              "name" : "Big Ben",
+              "id" : "-JFvhrs9SgLjZleWMKVn"
+            },
+            "-JDpNunThU1e8a3In4A6" : {
+              "address" : "Rua Rio Amazonas, Rua Rio Amazonas Vila Rural Rio Grande",
+              "position" : "-32.0509542,-52.138128300000005",
+              "url" : "",
+              "category" : "-005",
+              "name" : "Rua Rio Amazonas",
+              "id" : "-JDpNunThU1e8a3In4A6"
+            },
+            "-JDpLyNKWKqqa58HFIu8" : {
+              "address" : "London Eye, Westminster Bridge Road London GB",
+              "position" : "51.5034001,-0.11951920000001337",
+              "url" : "",
+              "category" : "",
+              "name" : "London Eye",
+              "id" : "-JDpLyNKWKqqa58HFIu8"
+            }
+          },
+          "id" : "-Z1hOuUqwertyuiopasa"
+        },
+        "-Z2hOuUqwertyuiopasa" : {
+          "date" : "05/03/2014",
+          "places" : {
+            "-B1hOuUqwertyuiopasa" : {
+              "address" : "Pitshanger Park, London, United Kingdom",
+              "position" : "51.5288136,-0.31529169999998885",
+              "url" : "http://google.com/",
+              "category" : "-001",
+              "name" : "Pitshanger Park",
+              "id" : "-B1hOuUqwertyuiopasa"
+            }
+          },
+          "id" : "-Z2hOuUqwertyuiopasa"
+        }
+      }
+    },
+    "facebook:100007322078152" : {
+      "uid" : "facebook:100007322078152",
+      "name" : "Gabriel Oliveira",
+      "lastTravel" : "-JCxpNswNNAoeZUWQTL4",
+      "travels" : {
+        "-JCxpNswNNAoeZUWQTL4" : {
+          "date" : "02/01/2015",
+          "places" : {
+            "-JCxpSj7nVx5rW3lpagb" : {
+              "address" : "big ben",
+              "position" : "51.5007046,-0.12457480000000487",
+              "url" : "",
+              "category" : "-006",
+              "name" : "big ben",
+              "id" : "-JCxpSj7nVx5rW3lpagb"
+            }
+          },
+          "id" : "-JCxpNswNNAoeZUWQTL4"
+        }
+      }
+    }
+  },
+  "place" : {
+    "category" : {
+      "-003" : {
+        "type" : "Estação de Trem",
+        "id" : "-003"
+      },
+      "-006" : {
+        "type" : "Estádio de Futebol",
+        "id" : "-006"
+      },
+      "-002" : {
+        "type" : "Aeroporto",
+        "id" : "-002"
+      },
+      "-005" : {
+        "type" : "Atração Turística",
+        "id" : "-005"
+      },
+      "-007" : {
+        "type" : "Restaurante",
+        "id" : "-007"
+      },
+      "-001" : {
+        "type" : "Hotel",
+        "id" : "-001"
+      },
+      "-004" : {
+        "type" : "Museu",
+        "id" : "-004"
+      }
+    }
+  }
+}

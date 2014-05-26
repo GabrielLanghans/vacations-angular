@@ -7,18 +7,18 @@
     "es5-shim": "~2.0.8",
     "jquery": "~1.9.1",
     "angular-route": "~1.2.0-rc.3",
-    "angular-fire": "~0.3.1",
     "angular-animate": "~1.2.0-rc.3",
     "angular-google-maps": "1.0.2",
     "bootstrap-sass": "~3.0.2",
-    "animate.css": "~2.1.0"
+    "animate.css": "~2.1.0",
+    "angularfire": "~0.7.1"
   },
   "devDependencies": {
     "angular-mocks": "~1.0.7",
     "angular-scenario": "~1.0.7"
   },
   "resolutions": {
-    "angular": "1.2.3",
+    "angular": "1.2.16",
     "angular-mocks": "~1.0.7"
   },
   "authors": [
