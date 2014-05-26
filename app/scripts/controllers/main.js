@@ -902,6 +902,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
 });
 
 
+
 /*
  *  filter
  */
