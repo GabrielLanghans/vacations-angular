@@ -53,10 +53,10 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             User.setUser(error);
             $rootScope.user = error;
 
-            // console.log("=======================");
-            // console.log("error: ");
-            // console.log($rootScope.user);
-            // console.log("=======================");
+            console.log("=======================");
+            console.log("error: ");
+            console.log($rootScope.user);
+            console.log("=======================");
 
         } else if (user) {            
             //$rootScope.status = {log: true, name: user.name, username: user.username};
@@ -69,11 +69,11 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
             console.log($rootScope.user);
 
-            // console.log("=======================");
-            // console.log("logou: ");
-            // console.log($rootScope.user);
-            // console.log($scope.user);
-            // console.log("=======================");
+            console.log("=======================");
+            console.log("logou: ");
+            console.log($rootScope.user);
+            console.log($scope.user);
+            console.log("=======================");
 
 
             var userRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid);
@@ -111,11 +111,13 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             User.setUser("");
             $rootScope.user = [];
 
-            // console.log("=======================");
-            // console.log("usuário deslogado");
-            // console.log("=======================");
+            console.log("=======================");
+            console.log("usuário deslogado");
+            console.log("=======================");
 
-            $location.path('/');
+            $rootScope.$apply(function() {
+                $location.path('/');
+            });
         }
     });
 
@@ -123,6 +125,7 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
         auth.login("facebook");
     }
     $scope.logout = function(){
+        //fireFactory.firebaseRef("users/" + $rootScope.user.uid).off('value');
         auth.logout();
     }
 
