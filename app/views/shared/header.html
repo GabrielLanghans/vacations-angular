@@ -1,7 +1,12 @@
+<!-- <img src="https://graph.facebook.com/100002807237878/picture?type=large"> -->
+<img src="https://graph.facebook.com/100002807237878/picture?type=normal">
+<!-- <img src="https://graph.facebook.com/100002807237878/picture?type=small"> -->
+<!-- <img src="https://graph.facebook.com/100002807237878/picture?type=square"> -->
+
 
 	<div class="pull-right" data-ng-controller="authCtrl">		
 		<button ng-hide="user.uid" type="button" class="btn btn-default navbar-btn" ng-click="login()">Logar com Facebook</button> 
 		<p ng-show="user.uid" class="navbar-text">
-			Olá, {{user.username}} | <a href="javascript:void(0);" class="navbar-link" ng-click="logout()">logout</a>
+			Olá, {{user.displayName}} | <a href="javascript:void(0);" class="navbar-link" ng-click="logout()">logout</a>
 		</p>
 	</div>

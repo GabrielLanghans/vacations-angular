@@ -3,7 +3,7 @@
 // var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAnimate", "google-maps"]);
 var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAnimate"]);
 
-vacationsApp.factory("fireFactory", function($rootScope, $timeout, $firebase) {
+vacationsApp.factory("fireFactory", function($rootScope, $firebase) {
     var baseUrl = 'https://vacations-initial.firebaseio.com/',
         path = "";
 
@@ -20,10 +20,11 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, $firebase) {
             var ref = new Firebase(path);
 
             if(name == undefined){
-              $rootScope.dataList = $firebase(ref);
+                $rootScope.dataList = $firebase(ref);
             }
             else{
-              $rootScope[name] = $firebase(ref);
+                $rootScope[name] = [];
+                $rootScope[name] = $firebase(ref);
             }
 
             
@@ -40,45 +41,39 @@ vacationsApp.factory("fireFactory", function($rootScope, $timeout, $firebase) {
 
 vacationsApp.config(function ($routeProvider, $locationProvider) {
     $routeProvider
-      .when('/', {
+    .when('/', {
         templateUrl: 'views/home.html',
         resolve: {
-          verifyData: function($route, $rootScope, $location, fireFactory){
-            if($rootScope.user){
-              console.log($rootScope.user);
-              $location.path('/home');
-              //redirectTo: '/';
+            verifyData: function($route, $rootScope, $location, fireFactory){
+                if($rootScope.user){
+                    console.log($rootScope.user);
+                    $location.path('/home');
+                    //redirectTo: '/';
+                }
+                else{
+                    return fireFactory.dataRef("place", "placeData");
+                }
             }
-            else{
-              console.log(fireFactory.dataRef("place", "placeData"));
-              return fireFactory.dataRef("place", "placeData");
-            }
-          }
         }
-      })
+    })
 
-      .when('/home', {
+    .when('/home', {
         templateUrl: 'views/home-auth.html',
         resolve: {
-          dataLoad: function($route, fireFactory, $rootScope, $location) {    
-            if($rootScope.user){ 
-              // fireFactory.dataRef("place/category", "placeRef").then(function(){                 
-              // });
-
-            console.log(fireFactory.dataRef("users/" + $rootScope.user.uid));
-
-              return fireFactory.dataRef("users/" + $rootScope.user.uid);  
+            dataLoad: function($route, fireFactory, $rootScope, $location) {    
+                if($rootScope.user){ 
+                    return fireFactory.dataRef("users/" + $rootScope.user.uid);  
+                }
+                else{
+                    return $location.path("/");
+                }
             }
-            else{
-              return $location.path("/");
-            }
-          }
         }
-      })  
+    })  
 
-      .otherwise({
+    .otherwise({
         redirectTo: '/'
-      });
+    });
 
-      //$locationProvider.html5Mode(true);
-  });
+    //$locationProvider.html5Mode(true);
+});

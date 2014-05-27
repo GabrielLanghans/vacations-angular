@@ -9,7 +9,7 @@ vacationsApp.factory('User', function ($rootScope) {
     return {
         setUser:function (data) {
             userResponse = data;
-            //console.log(data);
+            console.log(data);
         },
         getUser:function () {
             return userResponse;
@@ -60,8 +60,14 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
         } else if (user) {            
             //$rootScope.status = {log: true, name: user.name, username: user.username};
+
+            console.log("USERRRR");
+            console.log(user);
+
             User.setUser(user);
             $rootScope.user = user;
+
+            console.log($rootScope.user);
 
             // console.log("=======================");
             // console.log("logou: ");
