@@ -684,6 +684,40 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData, Map) 
     }
 });
 
+vacationsApp.directive("mapAutocomplete", function($rootScope) {
+    return {
+        restrict: 'A',        
+        link: function (scope, elem, attrs) {
+            var field = (document.getElementById(attrs.id)),
+                autocomplete = new google.maps.places.Autocomplete(field),
+                address;
+
+            autocomplete.bindTo('bounds', $rootScope.map);
+
+            google.maps.event.addListener(autocomplete, 'place_changed', function() {
+                var place = autocomplete.getPlace();
+
+                if (!place.geometry) {
+                    return;
+                }
+
+                if (place.address_components) {
+                    address = [
+                        (place.address_components[0] && place.address_components[0].short_name || ''),
+                        (place.address_components[1] && place.address_components[1].short_name || ''),
+                        (place.address_components[2] && place.address_components[2].short_name || '')
+                    ].join(' ');
+                }
+
+                $rootScope.$apply(function() {
+                    scope.dataPlace.$address = place.name +", "+ address;
+                    scope.dataPlace.name = place.name;
+                });
+            });
+        }
+    };
+});
+
 
 vacationsApp.controller("NavCtrl", function($scope, $rootScope){
     $scope.menu = ["Atrações", "Roteiro"];
@@ -772,48 +806,8 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
         this.cancel();
     }
-
-
-    // fazer uma diretiva para este código
-    $scope.autocomplete = function(){
-        var input = (document.getElementById('field-address')),
-            address;
-
-        var autocomplete = new google.maps.places.Autocomplete(input);
-        autocomplete.bindTo('bounds', $rootScope.map);
-
-
-            google.maps.event.addListener(autocomplete, 'place_changed', function() {
-                //$rootScope.$apply(function() {
-                var place = autocomplete.getPlace();
-
-                if (!place.geometry) {
-                    return;
-                }
-
-                if (place.address_components) {
-                    address = [
-                        (place.address_components[0] && place.address_components[0].short_name || ''),
-                        (place.address_components[1] && place.address_components[1].short_name || ''),
-                        (place.address_components[2] && place.address_components[2].short_name || '')
-                    ].join(' ');
-                }
-
-                // console.log($scope.dataPlace.$address);
-                // console.log(address);
-                // console.log(place);
-                // console.log(place.name +", "+ address);
-                $rootScope.$apply(function() {
-                    $scope.dataPlace.$address = place.name +", "+ address;
-                    $scope.dataPlace.name = place.name;
-                });
-            });
-        //});
-    }
-
-    $scope.autocomplete();
-
 });
+
 
 //talvez separar em dois serviços os dados das atraçoes e os dados das "travels"
 vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {

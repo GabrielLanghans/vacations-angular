@@ -63,11 +63,10 @@
                     <form name="formPlace">                        
                         <div class="form-group" data-ng-class="{error: formPlace.address.$invalid && formPlace.address.$dirty}">
                             <label class="control-label">Localização</label>
-                            <input id="field-address" class="form-control" type="text" name="address" value="{{dataPlace.address}}" data-ng-model="dataPlace.$address" required>
+                            <input map-autocomplete id="field-address" class="form-control" type="text" name="address" value="{{dataPlace.address}}" data-ng-model="dataPlace.$address" required>
                             $address: {{dataPlace.$address}}<br>
                             address: {{dataPlace.address}}
                         </div>
-
                                                 
                         <div class="form-group" data-ng-class="{error: formPlace.name.$invalid && formPlace.name.$dirty}">
                             <label class="control-label">Nome</label>
