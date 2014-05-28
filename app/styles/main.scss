@@ -1,0 +1,205 @@
+@import "mixins", "fonts";
+
+@import "compass/reset";
+@import "compass/css3";
+@import "compass/utilities";
+
+$experimental-support-for-svg: true;
+
+// var
+$imagePath:"../images";
+
+//helpers
+.wrapper{width:944px; height:1574px; margin:0 auto;}
+.clear{clear:both;}
+.clearfix{@include clearfix;}
+.float-left{@include float-left;}
+.float-right{@include float-right;}
+.ir{@include hide-text;}
+.absolute{position:absolute;}
+.relative{position:relative;}
+.a-center{text-align:center;}
+
+// sprite
+$sprite-sprite-dimensions:true;
+@import "../images/sprite/*.png";
+@include all-sprite-sprites;
+
+
+html, body{margin:0; padding:0;}
+
+#header{
+    @extend .clearfix;
+}
+
+#container-map{height:700px;}
+
+
+/*
+body{
+    @include bg(bg, jpg, $position:center top, $color:#016ECB);
+}
+
+#header-lacta{
+    .browser &{
+        @include opacity(0);
+        position:absolute; z-index:10; left:50%; top:-108px; margin-left:-472px; width:944px;
+    }
+}
+
+.loader{
+    @include bg(loader, gif, $position:center, $color:#60C7EE);
+    position:fixed; z-index:500; left:0; top:0; bottom:0; right:0;
+    .no-js &{display:none;}
+}
+.layer{    
+    @include bg(layer, $repeat:repeat);
+    display:none; position:fixed; z-index:100; left:0; top:0; bottom:0; right:0;
+}
+.modal{
+    @include box-shadow(0 0 80px 2px rgba(34,34,34,.6));
+    display:none; position:fixed; z-index:200; width:840px; height:442px; left:50%; top:50%; margin:-221px 0 0 -420px; border:4px solid #0091F6; background-color:#eee;
+    iframe{position:absolute; width:840px; height:442px;}
+    .modal-mg{padding:20px;}
+    .overflow{height:280px; overflow:auto;}
+    .tt-terms{margin-bottom:20px; font:36px/120% din_condensed_bold; color:#104593;}
+    strong{display:block; margin-bottom:10px; font:18px/120% din_condensed_bold; color:#104593; text-transform:uppercase;}
+    p{margin-bottom:15px; font:12px/120% Arial; color:#104593;}
+    h4{margin-bottom:15px; font:12px/120% Arial; color:#104593; font-weight:bold;}
+}
+
+.bg{
+    @include bg(mangueiras);
+    position:absolute; z-index:1; left:22px; top:416px; width:916px; height:889px;
+}
+
+.tit{
+    @extend .sp-home-pack_bubbly;
+    position:absolute; z-index:20; left:-54px; top:169px;
+}
+
+.texto1{
+    @extend .sp-home-texto1;
+    position:absolute; z-index:10; left:407px; top:224px;
+    .browser &{
+        @include opacity(0);
+        left:507px;
+    }
+    a{display:block; position:absolute; right:0; bottom:0; width:120px; height:50px;}
+}
+.texto2{
+    @extend .sp-home-texto2;
+    position:absolute; z-index:10; left:107px; top:718px;
+    .browser &{
+        @include opacity(0);
+        left:7px;
+    }
+}
+
+#video{
+    @extend .sp-home-bg_video;
+    position:absolute; z-index:10; left:155px; top:363px;
+    .bt-play{
+        @extend .sp-home-bt_play;        
+        @include transform(scale(0.9));
+        @include transition-property(transform);
+        @include transition-duration(0.2s);
+        position:absolute; z-index:10; left:320px; top:105px; border:none; cursor:pointer;
+        &:hover{
+            @include transform(scale(1));    
+        }
+        outline:none;
+    }    
+}
+.container-video{
+    @include box-shadow(0 0 80px 2px rgba(34,34,34,.6));
+    display:none; position:absolute; z-index:200; top:150px; left:50%; margin-left:-390px; width:779px; height:469px; border:4px solid #0091F6; background-color:#333;
+    .browser &{
+        @include opacity(0);
+        @include transform(scale(0.2));    
+    }
+}
+.bt-fechar-modal{
+    @include box-shadow(0 0 20px 3px rgba(34,34,34,.8));
+    @include border-radius(23px);
+    @include transition-property(border-color);
+    @include transition-duration(0.3s);
+    position:absolute; z-index:10; right:-16px; top:-16px; width:36px; height:31px; padding-top:5px; font:24px/100% Arial, sans-serif; font-weight:bold; color:#0080D9; text-align:center; text-decoration:none; border:5px solid #0092F9; background-color:#fff;
+    &:hover{
+        border-color:#4AB3FF;
+    }
+}
+
+.share-page{
+    position:absolute; z-index:11; left:184px; top:623px; width:60px;
+    .fb-like{margin-bottom:5px;}
+}
+.share-video{
+    @include clearfix;
+    position:absolute; z-index:10; left:0; top:-35px;
+    #like-video{float:left; margin-right:10px;}
+}
+
+#bubbly-ao-leite{
+    @extend .sp-home-thumb_bubbly_ao_leite;        
+    position:absolute; z-index:10; left:36px; top:856px; cursor:pointer;
+    .bullet{
+        @extend .sp-home-bullet;
+        display:block; position:absolute; z-index:10; left:135px; top:265px;
+    }
+    .tit-bubbly-ao-leite{
+        @extend .sp-home-txt_bubbly_ao_leite;
+        display:block; position:absolute; z-index:10; left:169px; top:243px;
+    }
+}
+
+#bubbly-duo{
+    @extend .sp-home-thumb_bubbly_duo;
+    position:absolute; z-index:10; left:493px; top:1065px; cursor:pointer;
+    .bullet{
+        @extend .sp-home-bullet;
+        display:block; position:absolute; z-index:10; left:132px; top:273px;
+    }
+    .tit-bubbly-duo{
+        @extend .sp-home-txt_bubbly_duo;
+        display:block; position:absolute; z-index:10; left:165px; top:250px;
+    }
+}
+
+.modal-prod{
+    @extend .sp-home-bg_modal;
+    display:none; position:absolute; z-index:199; left:56px; top:752px;    
+    .bt-fechar-modal{top:80px; right:141px;}
+}
+.img-prod{
+    position:absolute; left:0; top:-15px;
+}
+.group-tit{
+    position:absolute; left:413px; top:213px; width:294px;
+    .tit-prod{margin-bottom:8px; font:38px/100% din_engschrift_std; color:#047fd1; text-transform:uppercase;}
+    h2{font:20px/100% din_engschrift_std; color:#707070;}
+    .lt-ie9 &{
+        .tit-prod{font:30px/100% Arial;}
+        h2{font:18px/100% Arial;}
+    }
+}
+.ingredientes{
+    position:absolute; z-index:1; left:222px; top:370px; width:161px; max-height:155px; padding:10px 15px; background-color:#047fd1; //left:413px;
+    p{font:12px/130% din_condensed_bold; color:#bcd9f6;}
+}
+.tabela-nutricional{
+    position:absolute; z-index:1; left:413px; top:370px; width:273px; height:217px; padding:10px 15px; background-color:#184596;
+}
+.subtit{
+    @include clearfix;
+    margin-bottom:8px; font:12px/100% din_condensed_bold; color:#fff; text-transform:uppercase;
+    span{float:right; text-transform:none;}
+}
+.table{
+    th, td{padding:4px 0; font:12px/100% din_condensed_bold; color:#8dccf5;}
+    th{border-top:solid 1px #fff; border-bottom:solid 1px #fff;}
+}
+.share{position:absolute; z-index:1; left:222px; top:316px; width:140px;}
+
+#footer-lacta{position:absolute; bottom:0;}
+*/

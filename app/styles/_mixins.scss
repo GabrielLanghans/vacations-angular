@@ -1,0 +1,31 @@
+@mixin ff($name, $fileName:$name, $className:$name, $isWebFont:true) {
+    $fullPath: '#{$fontPath}/#{$fileName}';
+    @if ($isWebFont) {
+        $fullPath: $fullPath + '-webfont';
+    }
+
+    @font-face {
+        font-family: '#{$name}';
+        src: url('#{$fullPath}.eot');
+        src: url('#{$fullPath}.eot?#iefix') format('embedded-opentype'),
+        url('#{$fullPath}.woff') format('woff'),
+        url('#{$fullPath}.ttf') format('truetype'),
+        url('#{$fullPath}.svg#dinproblack') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    .#{$className} {
+        font-family: #{$name}, sans-serif;
+    }
+}
+
+@mixin bg($img, $format:png, $repeat:no-repeat, $position:left top, $color:'') {
+    background:#{$color} url("#{$imagePath}/#{$img}.#{$format}") $repeat $position;
+}
+
+@mixin rect($w, $h, $display:block) {
+    width:$w;
+    height:$h;
+    display:$display;
+}
