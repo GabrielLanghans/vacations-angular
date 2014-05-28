@@ -39,10 +39,10 @@ vacationsApp.factory("fireFactory", function($rootScope, $firebase) {
 });
 
 
-vacationsApp.config(function ($routeProvider, $locationProvider) {
+vacationsApp.config(function ($routeProvider, $locationProvider, $provide) {
     $routeProvider
     .when('/', {
-        templateUrl: 'views/home.html',
+        templateUrl: '/views/home.html',
         resolve: {
             verifyData: function($route, $rootScope, $location, fireFactory){
                 if($rootScope.user){
@@ -58,7 +58,7 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
     })
 
     .when('/home', {
-        templateUrl: 'views/home-auth.html',
+        templateUrl: '/views/home-auth.html',
         resolve: {
             dataLoad: function($route, fireFactory, $rootScope, $location) {    
                 if($rootScope.user){ 
@@ -75,5 +75,10 @@ vacationsApp.config(function ($routeProvider, $locationProvider) {
         redirectTo: '/'
     });
 
-    //$locationProvider.html5Mode(true);
+    // $provide.decorator('$sniffer', function($delegate) {
+    //     $delegate.history = false;
+    //     return $delegate;
+    // });
+
+    // $locationProvider.html5Mode(true).hashPrefix('!');
 });

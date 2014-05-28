@@ -53,10 +53,10 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             User.setUser(error);
             $rootScope.user = error;
 
-            console.log("=======================");
-            console.log("error: ");
-            console.log($rootScope.user);
-            console.log("=======================");
+            // console.log("=======================");
+            // console.log("error: ");
+            // console.log($rootScope.user);
+            // console.log("=======================");
 
         } else if (user) {            
             //$rootScope.status = {log: true, name: user.name, username: user.username};
@@ -69,16 +69,18 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
             console.log($rootScope.user);
 
-            console.log("=======================");
-            console.log("logou: ");
-            console.log($rootScope.user);
-            console.log($scope.user);
-            console.log("=======================");
+            // console.log("=======================");
+            // console.log("logou: ");
+            // console.log($rootScope.user);
+            // console.log($scope.user);
+            // console.log("=======================");
 
 
             var userRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid);
             userRef.on('value', function(snapshot) {
                 if(snapshot.val() == null){
+                    // Talvez direcionar o usuário para uma view onde ele preencha um cadastro pra, aí sim, criar o usuário na base.
+
                     console.log('Vazio. Usuário não existe na base! Criar usuário na firebase!');
                     //console.log(snapshot.val());
 
@@ -111,9 +113,9 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             User.setUser("");
             $rootScope.user = [];
 
-            console.log("=======================");
-            console.log("usuário deslogado");
-            console.log("=======================");
+            // console.log("=======================");
+            // console.log("usuário deslogado");
+            // console.log("=======================");
 
             $rootScope.$apply(function() {
                 $location.path('/');
@@ -125,7 +127,6 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
         auth.login("facebook");
     }
     $scope.logout = function(){
-        //fireFactory.firebaseRef("users/" + $rootScope.user.uid).off('value');
         auth.logout();
     }
 
@@ -280,6 +281,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData, Map) 
     return {
         restrict: "A",       
         replace: true, 
+        //passar o template para templateUrl
         template:   '<div>'+
                         '<div id="container-map"></div>'+
                         '<div id="directions-panel"></div>'+                        
@@ -772,6 +774,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
     }
 
 
+    // fazer uma diretiva para este código
     $scope.autocomplete = function(){
         var input = (document.getElementById('field-address')),
             address;
@@ -812,6 +815,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 
 });
 
+//talvez separar em dois serviços os dados das atraçoes e os dados das "travels"
 vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
     var storeData = [];
 

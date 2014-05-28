@@ -160,13 +160,13 @@ module.exports = function (grunt) {
       options: {
         sassDir: '<%= yeoman.app %>/styles',
         cssDir: '.tmp/styles',
-        generatedImagesDir: '.tmp/images/generated',
+        generatedImagesDir: '<%= yeoman.app %>/images',
         imagesDir: '<%= yeoman.app %>/images',
         javascriptsDir: '<%= yeoman.app %>/scripts',
         fontsDir: '<%= yeoman.app %>/styles/fonts',
         importPath: '<%= yeoman.app %>/bower_components',
         httpImagesPath: '/images',
-        httpGeneratedImagesPath: '/images/generated',
+        httpGeneratedImagesPath: '',
         httpFontsPath: '/styles/fonts',
         relativeAssets: false,
         assetCacheBuster: false,
@@ -174,7 +174,7 @@ module.exports = function (grunt) {
       },
       dist: {
         options: {
-          generatedImagesDir: '<%= yeoman.dist %>/images/generated'
+          generatedImagesDir: '<%= yeoman.app %>/images'
         }
       },
       server: {
@@ -190,9 +190,9 @@ module.exports = function (grunt) {
         files: {
           src: [
             '<%= yeoman.dist %>/scripts/{,*/}*.js',
-            '<%= yeoman.dist %>/styles/{,*/}*.css',
-            '<%= yeoman.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
-            '<%= yeoman.dist %>/styles/fonts/*'
+            '<%= yeoman.dist %>/styles/{,*/}*.css'
+            // '<%= yeoman.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
+            // '<%= yeoman.dist %>/styles/fonts/*'
           ]
         }
       }
@@ -324,6 +324,19 @@ module.exports = function (grunt) {
       }
     },
 
+    // Generates a custom Modernizr build that includes only the tests you
+    // reference in your app
+    modernizr: {
+        devFile: '<%= yeoman.app %>/bower_components/modernizr/modernizr.js',
+        outputFile: '<%= yeoman.dist %>/scripts/vendor/modernizr.js',
+        files: [
+            '<%= yeoman.dist %>/scripts/{,*/}*.js',
+            '<%= yeoman.dist %>/styles/{,*/}*.css',
+            '!<%= yeoman.dist %>/scripts/vendor/*'
+        ],
+        uglify: true
+    },
+
     // Run some tasks in parallel to speed up the build process
     concurrent: {
       server: [
@@ -412,12 +425,13 @@ module.exports = function (grunt) {
     'concat',
     'ngmin',
     'copy:dist',
+    'modernizr',
     'cdnify',
     'cssmin',
     'uglify',
     'rev',
     'usemin',
-    'htmlmin'
+    // 'htmlmin'
   ]);
 
   grunt.registerTask('default', [
