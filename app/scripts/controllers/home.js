@@ -5,7 +5,7 @@ vacationsApp.controller("HomeCtrl", function($scope, $rootScope, $location, User
 
     $rootScope.user = User.getUser();
 
-    console.log($rootScope.user);
+    // console.log($rootScope.user);
 
 
     // console.log($rootScope.usuario);
