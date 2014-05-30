@@ -1,9 +1,7 @@
-vacationsApp.controller("HomeCtrl", function($scope, $rootScope, $location, User){
+vacationsApp.controller("HomeCtrl", function($scope, $rootScope, $location){
 
 
     //$rootScope.user = userService;
-
-    $rootScope.user = User.getUser();
 
     // console.log($rootScope.user);
 

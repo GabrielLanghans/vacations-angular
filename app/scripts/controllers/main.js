@@ -3,20 +3,7 @@
 /*
  *  factory
  */
-vacationsApp.factory('User', function ($rootScope) {
-    var userResponse = [];
-
-    return {
-        setUser:function (data) {
-            userResponse = data;
-        },
-        getUser:function () {
-            return userResponse;
-        }
-    };
-});
-
-vacationsApp.factory('Map', function ($rootScope) {
+vacationsApp.factory('Map', function () {
     var map;
 
     return {
@@ -34,30 +21,34 @@ vacationsApp.factory('Map', function ($rootScope) {
 /*
  *  controller
  */
-vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fireFactory, User){
+vacationsApp.controller("HomeAuthCtrl", function($scope, loadData){
+    console.log(loadData);
 
-    $rootScope.user = User.getUser(); 
+    $scope.dataList = loadData.userData;
+    $scope.placeCategories = loadData.placeCatData;
+
+})
+
+
+vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fireFactory){
+
+    $rootScope.user = [];
 
     var auth = new FirebaseSimpleLogin(fireFactory.firebaseRef(), function(error, user) {
         if (error) {
-            User.setUser(error);
             $rootScope.user = error;
 
             // console.log("=======================");
             // console.log("Login error: ");
             // console.log($rootScope.user);
-            // console.log($scope.user);
             // console.log("=======================");
 
         } else if (user) {            
-
-            User.setUser(user);
             $rootScope.user = user;
 
             // console.log("=======================");
             // console.log("logou: ");
             // console.log($rootScope.user);
-            // console.log($scope.user);
             // console.log("=======================");
 
 
@@ -85,7 +76,6 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             });            
 
         } else {            
-            User.setUser("");
             $rootScope.user = [];
 
             // console.log("=======================");
@@ -96,6 +86,8 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
                 $location.path('/');
             });
         }
+
+        console.log($rootScope.user);
     });
 
     $scope.login = function(){
@@ -105,14 +97,12 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
         auth.logout();
     }
 
+
 })
 
-vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $routeParams, User, fireFactory, vacationsData){
-
-    $rootScope.user = User.getUser();
-    $scope.user = User.getUser();
-
-
+vacationsApp.controller("MapCtrl", function($scope, $rootScope, vacationsData){
+    //returar rootscope e usar apenas scope
+    
     $scope.route = {type: "TRANSIT", origin: false, destination: false};
 
     $rootScope.travel = {$show: false, $edit: false, date: ""};
@@ -173,7 +163,7 @@ vacationsApp.controller("MapCtrl", function($q, $timeout, $scope, $rootScope, $r
 });
 
 
-vacationsApp.controller("NavCtrl", function($scope, $rootScope){
+vacationsApp.controller("NavCtrl", function($scope){
     $scope.menu = ["Atrações", "Roteiro"];
 
     $scope.setPage = function(section) {
@@ -185,9 +175,7 @@ vacationsApp.controller("NavCtrl", function($scope, $rootScope){
     }    
 });
 
-vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFactory, vacationsData, Map){
-
-    $rootScope.map = Map.getMap(); 
+vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, vacationsData){
 
     var lat,
         lng,
@@ -249,7 +237,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, fireFact
 /*
  *  directive
  */
-vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData, Map) {
+vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
     return {
         restrict: "A",       
         replace: true, 
@@ -394,6 +382,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData, Map) 
             }
 
 
+            //fazer uma diretiva pra isso? Talvez um controller ou service!
             $rootScope.codeAddress = function(address) {
                 var deferred = $q.defer();
                 valGeocode = "";
@@ -522,6 +511,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, vacationsData, Map) 
                 }
             }            
 
+            //fazer uma diretiva pra isso? Talvez um controller ou service!
             $rootScope.calcRoute = function(){                
                 directionsDisplay.suppressMarkers = true;
                 directionsDisplay.setMap($rootScope.map);
@@ -581,6 +571,7 @@ vacationsApp.directive("mapAutocomplete", function($rootScope) {
                 autocomplete = new google.maps.places.Autocomplete(field),
                 address;
 
+            //rever esse rootscope.map. Não da pra usar scope?
             autocomplete.bindTo('bounds', $rootScope.map);
 
             google.maps.event.addListener(autocomplete, 'place_changed', function() {

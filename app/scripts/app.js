@@ -3,29 +3,29 @@
 // var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAnimate", "google-maps"]);
 var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAnimate"]);
 
-vacationsApp.factory("fireFactory", function($rootScope, $firebase) {
+vacationsApp.factory("fireFactory", function($firebase) {
     var baseUrl = 'https://vacations-initial.firebaseio.com/',
         path = "";
 
-    $rootScope.dataList = [];
+    // $rootScope.dataList = [];
             
     return {
         firebaseRef: function(path) {
             path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;
             return new Firebase(path);
         },
-        dataRef: function(path, name) {            
+        dataRef: function(path) {            
             path = (path !== undefined) ?  baseUrl + '/' + path : baseUrl;     
 
             var ref = new Firebase(path);
 
-            if(name == undefined){
-                $rootScope.dataList = $firebase(ref);
-            }
-            else{
-                $rootScope[name] = [];
-                $rootScope[name] = $firebase(ref);
-            }
+            // if(name == undefined){
+            //     $rootScope.dataList = $firebase(ref);
+            // }
+            // else{
+            //     $rootScope[name] = [];
+            //     $rootScope[name] = $firebase(ref);
+            // }
 
             
             // var promise = $firebase(ref);
@@ -33,7 +33,8 @@ vacationsApp.factory("fireFactory", function($rootScope, $firebase) {
             // return promise;
           
 
-            return $rootScope;
+            // return $rootScope;
+            return $firebase(ref);
         }
     };
 });
@@ -44,14 +45,9 @@ vacationsApp.config(function ($routeProvider, $locationProvider, $provide) {
     .when('/', {
         templateUrl: '/views/home.html',
         resolve: {
-            verifyData: function($route, $rootScope, $location, fireFactory){
+            verifyAuth: function($route, $rootScope, $location){
                 if($rootScope.user){
-                    console.log($rootScope.user);
                     $location.path('/home');
-                    //redirectTo: '/';
-                }
-                else{
-                    return fireFactory.dataRef("place", "placeData");
                 }
             }
         }
@@ -59,10 +55,11 @@ vacationsApp.config(function ($routeProvider, $locationProvider, $provide) {
 
     .when('/home', {
         templateUrl: '/views/home-auth.html',
+        controller: 'HomeAuthCtrl',
         resolve: {
-            dataLoad: function($route, fireFactory, $rootScope, $location) {    
+            loadData: function($route, fireFactory, $rootScope, $location) {    
                 if($rootScope.user){ 
-                    return fireFactory.dataRef("users/" + $rootScope.user.uid);  
+                    return {userData:fireFactory.dataRef("users/" + $rootScope.user.uid), placeCatData:fireFactory.dataRef("place")};  
                 }
                 else{
                     return $location.path("/");
