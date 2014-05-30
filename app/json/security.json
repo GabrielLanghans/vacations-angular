@@ -1,5 +1,9 @@
 {
   "rules": {
+    "place": {
+      ".read": true,
+      ".write": true      
+    },
     "users": {
       "$user": {
         ".read": "$user == auth.uid",
@@ -16,19 +20,17 @@
 
         "travels": {
           "$travels": {
-            ".validate": "newData.hasChildren(['id', 'date', 'places'])",
+            ".validate": "newData.hasChildren(['id', 'date'])",
             
             "places": {
               "$places": {
-                ".validate": "newData.hasChildren(['id', 'position', 'name', 'address', 'url'])",
+                ".validate": "newData.hasChildren(['id', 'name', 'address', 'url'])",
                 
                 "id": {
                   ".validate": "newData.isString() && newData.val() !== ''"
                 },
                 
-                "position": {
-                  ".validate": "newData.isString() && newData.val() !== ''"
-                },
+                
                 
                 "name": {
                   ".validate": "newData.isString() && newData.val() !== ''"

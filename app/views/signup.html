@@ -1,0 +1,32 @@
+<section>
+	<header>
+		<hgroup>
+			<h1>Cadastre-se</h1>
+			<h2>Crie sua conta de graça!</h2>
+		</hgroup>			
+	</header>
+
+	<form name="formSignup">
+		<div class="form-group" data-ng-class="{error: formSignup.username.$invalid && formSignup.username.$dirty}">
+			<label class="control-label">Nome de Usuário</label>
+        	<input class="form-control" type="text" name="username" data-ng-model="acount.username" placeholder="Como você gosta de ser chamado?" required>	
+		</div>
+		
+		<div class="form-group" data-ng-class="{error: formSignup.email.$invalid && formSignup.email.$dirty}">
+			<label class="control-label">Email</label>
+        	<input class="form-control" type="email" name="email" data-ng-model="acount.email" placeholder="Digite seu email" required>	
+		</div>
+
+		<div class="form-group" data-ng-class="{error: formSignup.password.$invalid && formSignup.password.$dirty}">
+			<label class="control-label">Senha</label>
+        	<input class="form-control" type="password" name="password" data-ng-model="acount.password" placeholder="Digite sua senha" required>	
+		</div>
+
+		<div class="pull-right">
+            <button class="btn btn-default" type="button" data-ng-click="clean()">Limpar formulário</button>
+            <button class="btn btn-primary" type="button" data-ng-disabled="formSignup.$invalid" data-ng-click="createAcount()">Criar minha conta</button>
+            <!-- <button class="btn btn-primary" type="button" data-ng-disabled="formPlace.$invalid" data-ng-click="createAcount({username:acount.username, email:acount.email, pass:acount.password})">Criar minha conta</button> -->
+        </div>
+	</form>
+
+</section>

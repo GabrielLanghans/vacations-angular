@@ -5,9 +5,28 @@
 
 <div class="sprite-bt_site">aaa</div>
 
-	<div class="pull-right" data-ng-controller="authCtrl">		
-		<button ng-hide="user.uid" type="button" class="btn btn-default navbar-btn" ng-click="login()">Logar com Facebook</button> 
+	<div class="pull-right" data-ng-controller="authCtrl">
+		<div ng-hide="user.uid">
+			<a href="#/signup" ng-hide="user.uid" class="btn btn-primary navbar-btn">Criar uma conta</a> 
+
+			<form class="navbar-form navbar-right" name="formSignin">
+				<div class="form-group" data-ng-class="{error: formSignin.email.$invalid && formSignin.email.$dirty}">
+					<input type="email" data-ng-model="login.email" placeholder="Email" class="form-control" name="email" required>
+				</div>
+				<div class="form-group" data-ng-class="{error: formSignin.password.$invalid && formSignin.password.$dirty}">
+					<input type="password" data-ng-model="login.password" placeholder="Password" class="form-control" name="password" required>
+				</div>
+				<button type="submit" class="btn btn-success" data-ng-disabled="formSignin.$invalid" data-ng-click="login()">Sign in</button>
+			</form>
+
+			
+			<button ng-hide="user.uid" type="button" class="btn btn-default navbar-btn" ng-click="loginFacebook()">Logar com Facebook</button> 	
+		</div>
+		
+
 		<p ng-show="user.uid" class="navbar-text">
-			Olá, {{user.displayName}} | <a href="javascript:void(0);" class="navbar-link" ng-click="logout()">logout</a>
+			Olá, {{dataList}} | <a href="javascript:void(0);" class="navbar-link" ng-click="logout()">logout</a>
 		</p>
 	</div>
+
+	

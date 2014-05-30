@@ -46,7 +46,8 @@ vacationsApp.config(function ($routeProvider, $locationProvider, $provide) {
         templateUrl: '/views/home.html',
         resolve: {
             verifyAuth: function($route, $rootScope, $location){
-                if($rootScope.user){
+                if($rootScope.user !== undefined){
+                    console.log('user', $rootScope.user);
                     $location.path('/home');
                 }
             }
@@ -58,11 +59,24 @@ vacationsApp.config(function ($routeProvider, $locationProvider, $provide) {
         controller: 'HomeAuthCtrl',
         resolve: {
             loadData: function($route, fireFactory, $rootScope, $location) {    
-                if($rootScope.user){ 
+                if($rootScope.user !== undefined){
                     return {userData:fireFactory.dataRef("users/" + $rootScope.user.uid), placeCatData:fireFactory.dataRef("place")};  
                 }
                 else{
                     return $location.path("/");
+                }
+            }
+        }
+    })
+
+    .when('/signup', {
+        templateUrl: '/views/signup.html',
+        controller: 'SignupCtrl',
+        resolve: {
+            verifyAuth: function($route, $rootScope, $location){
+                if($rootScope.user !== undefined){
+                    console.log('user', $rootScope.user);
+                    $location.path('/home');
                 }
             }
         }

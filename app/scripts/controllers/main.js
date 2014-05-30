@@ -29,14 +29,79 @@ vacationsApp.controller("HomeAuthCtrl", function($scope, loadData){
 
 })
 
+vacationsApp.controller("SignupCtrl", function($rootScope, $scope, fireFactory){
+
+    $scope.acount = {username:"", email:"", pass:""};
+
+    $scope.clean = function(){
+        $scope.acount = {username:"", email:"", pass:""};
+    }
+    $scope.createAcount = function(){
+        // $scope.acount = {username:"", email:"", pass:""};
+        console.log($scope.acount);
+
+        $rootScope.auth.createUser($scope.acount.email, $scope.acount.password, function(error, user) {
+            console.log(error);
+            if(error){
+                //usar aqui o switch
+                if(error.code === "EMAIL_TAKEN"){
+                    alert("O email escolhido já existe!");
+                }
+            }
+            else if (!error) {
+                console.log('User Id: ' + user.uid + ', Email: ' + user.email);
+
+                var usersRef = fireFactory.firebaseRef("users/");
+
+                usersRef.set(user.uid, function(){
+                    usersRef.child(user.uid).set({name: $scope.acount.username, email:$scope.acount.email, uid: user.uid, travels: "", lastTravel: ""}, function(){
+                        console.log("USER Adicionado!!!")
+                    });
+                });
+            }
+        });
+    }
+})
+
 
 vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fireFactory){
 
-    $rootScope.user = [];
+    $rootScope.user = undefined;
+    $scope.login = {email:"", password:""};
 
-    var auth = new FirebaseSimpleLogin(fireFactory.firebaseRef(), function(error, user) {
+    $rootScope.auth = new FirebaseSimpleLogin(fireFactory.firebaseRef(), function(error, user) {
         if (error) {
             $rootScope.user = error;
+
+            switch(error.code) {
+                case 'INVALID_EMAIL':
+                    console.log(error.code);
+                    console.log("O email informado é incorreto.");
+                case 'INVALID_USER':
+                    console.log(error.code);
+                    console.log("O usuário informado não existe.");
+                case 'INVALID_PASSWORD':
+                    console.log(error.code);
+                    console.log("A senha informada é inválida.");
+                case 'USER_DENIED':
+                    console.log(error.code);
+                    console.log("O usuário cancelou a autenticação.");
+                default:
+                    console.log(error.code);
+                    console.log("Erro na autenticação");
+            }
+
+
+            // AUTHENTICATION_DISABLED  The specified authentication type is not enabled for this Firebase.
+            // EMAIL_TAKEN The specified email address is already in use.
+            // INVALID_EMAIL   The specified email address is incorrect.
+            // INVALID_FIREBASE    Invalid Firebase specified.
+            // INVALID_ORIGIN   Unauthorized request origin, please check application configuration.
+            // INVALID_PASSWORD    The specified password is incorrect.
+            // INVALID_USER    The specified user does not exist.
+            // UNKNOWN_ERROR   An unknown error occurred. Please contact support@firebase.com.
+            // USER_DENIED User denied authentication request.
+
 
             // console.log("=======================");
             // console.log("Login error: ");
@@ -46,10 +111,12 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
         } else if (user) {            
             $rootScope.user = user;
 
-            // console.log("=======================");
-            // console.log("logou: ");
-            // console.log($rootScope.user);
-            // console.log("=======================");
+
+
+            console.log("=======================");
+            console.log("logou: ");
+            console.log($rootScope.user);
+            console.log("=======================");
 
 
             var userRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid);
@@ -76,7 +143,7 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             });            
 
         } else {            
-            $rootScope.user = [];
+            $rootScope.user = undefined;
 
             // console.log("=======================");
             // console.log("usuário deslogado");
@@ -91,12 +158,18 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
     });
 
     $scope.login = function(){
-        auth.login("facebook");
+        $rootScope.auth.login('password', {
+            email: $scope.login.email,
+            password: $scope.login.password,
+            rememberMe: true
+        });
+    }
+    $scope.loginFacebook = function(){
+        $rootScope.auth.login("facebook");
     }
     $scope.logout = function(){
-        auth.logout();
+        $rootScope.auth.logout();
     }
-
 
 })
 
@@ -666,6 +739,9 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         return storeData;
     },
     this.submitNewTravel = function(user, data) {
+
+        console.log(user);
+
         var travelRef = fireFactory.firebaseRef("users/" + user + "/travels/");
         var newPushRef = travelRef.push();
 
