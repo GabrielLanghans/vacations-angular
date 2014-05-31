@@ -3,11 +3,12 @@
 // var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAnimate", "google-maps"]);
 var vacationsApp = angular.module('vacationsApp', ["firebase", "ngRoute", "ngAnimate"]);
 
-vacationsApp.factory("fireFactory", function($firebase) {
+vacationsApp.factory("fireFactory", function($rootScope, $firebase) {
     var baseUrl = 'https://vacations-initial.firebaseio.com/',
         path = "";
 
-    // $rootScope.dataList = [];
+    $rootScope.user = {};
+    console.log($rootScope.user);
             
     return {
         firebaseRef: function(path) {
@@ -45,8 +46,8 @@ vacationsApp.config(function ($routeProvider, $locationProvider, $provide) {
     .when('/', {
         templateUrl: '/views/home.html',
         resolve: {
-            verifyAuth: function($route, $rootScope, $location){
-                if($rootScope.user !== undefined){
+            verifyAuth: function($route, $rootScope, $location, fireFactory){
+                if($rootScope.user.uid !== undefined){
                     console.log('user', $rootScope.user);
                     $location.path('/home');
                 }
@@ -57,9 +58,10 @@ vacationsApp.config(function ($routeProvider, $locationProvider, $provide) {
     .when('/home', {
         templateUrl: '/views/home-auth.html',
         controller: 'HomeAuthCtrl',
+        disableCache: true,
         resolve: {
             loadData: function($route, fireFactory, $rootScope, $location) {    
-                if($rootScope.user !== undefined){
+                if($rootScope.user.uid !== undefined){
                     return {userData:fireFactory.dataRef("users/" + $rootScope.user.uid), placeCatData:fireFactory.dataRef("place")};  
                 }
                 else{
@@ -74,7 +76,7 @@ vacationsApp.config(function ($routeProvider, $locationProvider, $provide) {
         controller: 'SignupCtrl',
         resolve: {
             verifyAuth: function($route, $rootScope, $location){
-                if($rootScope.user !== undefined){
+                if($rootScope.user.uid !== undefined){
                     console.log('user', $rootScope.user);
                     $location.path('/home');
                 }

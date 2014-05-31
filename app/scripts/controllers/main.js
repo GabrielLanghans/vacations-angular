@@ -21,11 +21,25 @@ vacationsApp.factory('Map', function () {
 /*
  *  controller
  */
-vacationsApp.controller("HomeAuthCtrl", function($scope, loadData){
-    console.log(loadData);
+vacationsApp.controller("HomeAuthCtrl", function($rootScope, $scope, loadData){
+    // console.log(loadData);
+    // console.log($rootScope.user);
 
-    $scope.dataList = loadData.userData;
-    $scope.placeCategories = loadData.placeCatData;
+    $scope.dataList = {};
+
+    if(loadData.userData){
+        $scope.dataList = loadData.userData;
+        $rootScope.user.name = loadData.userData.name;    
+
+        $scope.placeCategories = loadData.placeCatData;
+    }
+
+
+    
+
+    // console.log("=======================");
+    // console.log("home logado: ", $rootScope.user);
+    // console.log("=======================");
 
 })
 
@@ -66,12 +80,11 @@ vacationsApp.controller("SignupCtrl", function($rootScope, $scope, fireFactory){
 
 vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fireFactory){
 
-    $rootScope.user = undefined;
+    $rootScope.user.uid = undefined;
     $scope.login = {email:"", password:""};
 
     $rootScope.auth = new FirebaseSimpleLogin(fireFactory.firebaseRef(), function(error, user) {
         if (error) {
-            $rootScope.user = error;
 
             switch(error.code) {
                 case 'INVALID_EMAIL':
@@ -109,17 +122,15 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             // console.log("=======================");
 
         } else if (user) {            
-            $rootScope.user = user;
+
+            $rootScope.user.uid = user.uid;
+            // console.log("=======================");
+            // console.log("logou: ");
+            // console.log($rootScope.user);
+            // console.log("=======================");
 
 
-
-            console.log("=======================");
-            console.log("logou: ");
-            console.log($rootScope.user);
-            console.log("=======================");
-
-
-            var userRef = fireFactory.firebaseRef("users/" + $rootScope.user.uid);
+            var userRef = fireFactory.firebaseRef("users/" + user.uid);
             userRef.on('value', function(snapshot) {
                 if(snapshot.val() == null){
                     // Talvez direcionar o usuário para uma view onde ele preencha um cadastro pra, aí sim, criar o usuário na base.
@@ -128,8 +139,8 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
                     var userRef = fireFactory.firebaseRef("users/");
 
-                    userRef.set($rootScope.user.uid, function(){
-                        userRef.child($rootScope.user.uid).set({name: $rootScope.user.displayName, uid: $rootScope.user.uid, travels: "", lastTravel: ""}, function(){
+                    userRef.set(user.uid, function(){
+                        userRef.child(user.uid).set({name: user.displayName, uid: user.uid, travels: "", lastTravel: ""}, function(){
                             console.log("USER Adicionado!!!")
                         });
                     });
@@ -143,7 +154,7 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             });            
 
         } else {            
-            $rootScope.user = undefined;
+            $rootScope.user.uid = undefined;
 
             // console.log("=======================");
             // console.log("usuário deslogado");
@@ -154,7 +165,9 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
             });
         }
 
-        console.log($rootScope.user);
+        console.log("=======================");
+        console.log("logou: ", $rootScope.user.uid);
+        console.log("=======================");
     });
 
     $scope.login = function(){
@@ -487,6 +500,9 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
                 directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
 
                 var iniMap = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+
+                // google.maps.event.trigger(iniMap, 'resize');
+
                 Map.setMap(iniMap);
             };
 
@@ -622,11 +638,22 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
                 $rootScope.map.setZoom(15);
             };           
                     
-            if(scope.user){
+            if(scope.user.uid){
+                // alert('oi');
                 google.maps.event.addDomListener(window, 'load', scope.initializeMap());
+                // scope.initializeMap();
                 $rootScope.map = Map.getMap(); 
                 
                 $rootScope.drawListPin();
+
+
+                // scope.$watch(scope.dataList, function(newValue, oldValue) {
+                //       if (newValue !== oldValue) {
+                //         // You actions here
+                //         $rootScope.drawListPin();
+                //       }
+                //   }, true);
+
             }
             else{
                 //console.log("else scope.user");
