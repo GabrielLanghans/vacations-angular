@@ -186,12 +186,19 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
 })
 
-vacationsApp.controller("MapCtrl", function($scope, $rootScope, vacationsData){
+vacationsApp.controller("MapCtrl", function($scope, $rootScope, $filter, vacationsData){
     //returar rootscope e usar apenas scope
     
     $scope.route = {type: "TRANSIT", origin: false, destination: false};
 
-    $rootScope.travel = {$show: false, $edit: false, date: ""};
+    $scope.travel = {$show: false, $edit: false, date: ""};
+
+    //escuta pela mudanca das travels para atualizar no model para padrao de data (usando filtro de data)
+    $scope.$watch("dataList.travels", function(newValue, oldValue) {        
+        angular.forEach($scope.dataList.travels, function(value, key) {
+           $scope.dataList.travels[key].date = $filter('date')($scope.dataList.travels[key].date);
+        });
+    });
 
     var i;
 
@@ -206,16 +213,16 @@ vacationsApp.controller("MapCtrl", function($scope, $rootScope, vacationsData){
         streetViewControl: false        
     }
 
-    if(($scope.dataList.lastTravel == undefined) || ($scope.dataList.lastTravel == "")){
-        $rootScope.travel.$show = true;
+    if(($scope.dataList.lastTravel === undefined) || ($scope.dataList.lastTravel === "")){
+        $scope.travel.$show = true;
     }
 
     $scope.cancelTravel = function(){        
-        $rootScope.travel = vacationsData.cancelTravel();
+        $scope.travel = vacationsData.cancelTravel();
     }
 
     $scope.newTravel = function(){        
-        $rootScope.travel = vacationsData.newTravel();
+        $scope.travel = vacationsData.newTravel();
     }
 
     $scope.submitNewTravel = function(ref) {   
@@ -225,7 +232,7 @@ vacationsApp.controller("MapCtrl", function($scope, $rootScope, vacationsData){
     }
 
     $scope.editTravel = function(travel) {
-        $rootScope.travel = vacationsData.editTravel(travel);
+        $scope.travel = vacationsData.editTravel(travel);
     }
 
     $scope.submitEditTravel = function(data) {   
@@ -328,6 +335,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
         restrict: "A",       
         replace: true, 
         //passar o template para templateUrl
+        //dividir em algumas firetivas diferentes, como por exemplo a parte da travel, do tipo de rota e do painel de direcoes
         template:   '<div>'+
                         '<div id="container-map"></div>'+
                         '<div id="directions-panel"></div>'+                        
@@ -344,6 +352,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
                             '<h3>Viagem</h3>'+                        
                             '<div data-ng-hide="travel.$show">'+
                                 '<select data-ng-model="dataList.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in dataList.travels" data-ng-change="drawListPin()"></select>'+
+                                '{{dataList.travels[dataList.lastTravel].date | date:"shortDate"}}'+
                                 '<button type="button" data-ng-click="newTravel()">Nova Viagem</button>'+                                
                                 '<button type="button" data-ng-click="editTravel(dataList.travels[dataList.lastTravel].date)">Editar Viagem</button>'+                                
                             '</div>'+
@@ -353,7 +362,9 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
                                 '<form name="formTravel">'+
                                     '<div class="form-group" data-ng-class="{error: formTravel.date.$invalid && formTravel.date.$dirty}">'+
                                         '<label class="control-label">Data</label>'+
-                                        '<input class="form-control" type="date" name="date" type="date" data-ng-model="travel.date" required>'+
+                                        '<input class="form-control" type="date" placeholder="aaaa-mm-dd" name="date" data-ng-model="travel.date" required>'+
+                                        '{{travel.date}} <br>'+
+                                        '{{travel.date | date:"shortDate"}}'+
                                     '</div>'+
                                     '<button class="btn btn-default" type="button" data-ng-show="travel.$show" data-ng-click="travel.$show = false">Cancelar</button>'+
                                     '<button class="btn btn-danger" type="button" data-ng-show="travel.$edit" data-ng-click="deleteTravel()">Remover</button>'+
@@ -600,7 +611,7 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
                 }
             }            
 
-            //fazer uma diretiva pra isso? Talvez um controller ou service!
+            //fazer uma diretiva pra isso;
             $rootScope.calcRoute = function(){                
                 directionsDisplay.suppressMarkers = true;
                 directionsDisplay.setMap($rootScope.map);
