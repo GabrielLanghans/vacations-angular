@@ -12,10 +12,18 @@
     </google-map>
 </div> -->
 
+
+
 <div data-ng-controller="MapCtrl">
 	
 	HOME AUTH
-	<div data-draw-map></div>
+
+    {{travel}}
+	<draw-map data-map="container-map" data-map-opt="options" data-obj="dataList" data-id-combo="mode" data-id-pannel="directions-panel" data-r="route">
+        <map-travel data-obj="dataList" data-tr="travel" data-new-travel="newTravel()" data-edit-travel="editTravel(date)" data-delete-travel="deleteTravel()" data-sub-new-travel="submitNewTravel(date)" data-sub-edit-travel="submitEditTravel(date)"></map-travel>
+    </draw-map>
+
+    <div id="directions-panel"></div>
  
     <!-- <div style="width:500px; height:200px; background:#fff; position:absolute; top:100px; left:100px; -webkit-filter:blur(1px); opacity:1;">
         <p>abs</p>

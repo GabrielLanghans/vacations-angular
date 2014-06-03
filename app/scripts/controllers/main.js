@@ -186,12 +186,13 @@ vacationsApp.controller("authCtrl", function($scope, $rootScope, $location, fire
 
 })
 
-vacationsApp.controller("MapCtrl", function($scope, $rootScope, $filter, vacationsData){
+vacationsApp.controller("MapCtrl", function($scope, $rootScope, $filter, $q, vacationsData){
     //returar rootscope e usar apenas scope
     
     $scope.route = {type: "TRANSIT", origin: false, destination: false};
 
-    $scope.travel = {$show: false, $edit: false, date: ""};
+    $scope.travel = {show: false, edit: false, date: ""};
+    console.log($scope.travel);
 
     //escuta pela mudanca das travels para atualizar no model para padrao de data (usando filtro de data)
     $scope.$watch("dataList.travels", function(newValue, oldValue) {        
@@ -214,8 +215,33 @@ vacationsApp.controller("MapCtrl", function($scope, $rootScope, $filter, vacatio
     }
 
     if(($scope.dataList.lastTravel === undefined) || ($scope.dataList.lastTravel === "")){
-        $scope.travel.$show = true;
+        $scope.travel.show = true;
     }
+
+    $scope.codeAddress = function(address) {
+        var deferred = $q.defer(),
+            geocoder = new google.maps.Geocoder(),
+            valGeocode = "";
+      
+        geocoder.geocode( { 'address': address}, function(results, status) {                   
+            if (status == google.maps.GeocoderStatus.OK) {
+                
+                valGeocode = results[0].geometry.location;
+            }
+            else {
+                alert('Geocode was not successful for the following reason: ' + status);
+            }
+
+            deferred.resolve(valGeocode);                    
+        });
+
+        return deferred.promise;                
+    }
+
+    $scope.setCenter = function(position){
+        $rootScope.map.setCenter(new google.maps.LatLng(position.split(",")[0], position.split(",")[1]));
+        $rootScope.map.setZoom(15);
+    };
 
     $scope.cancelTravel = function(){        
         $scope.travel = vacationsData.cancelTravel();
@@ -225,7 +251,8 @@ vacationsApp.controller("MapCtrl", function($scope, $rootScope, $filter, vacatio
         $scope.travel = vacationsData.newTravel();
     }
 
-    $scope.submitNewTravel = function(ref) {   
+    $scope.submitNewTravel = function(ref) { 
+        console.log(ref);
         vacationsData.submitNewTravel($rootScope.user.uid, ref);        
 
         this.cancelTravel();        
@@ -274,7 +301,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, vacation
         lng,
         coords;
 
-    $scope.dataPlace = {$show: false, $edit: false, $address: "", position: "", id: "", name: "", address: "", category:"", url: ""};
+    $scope.dataPlace = {show: false, $edit: false, $address: "", position: "", id: "", name: "", address: "", category:"", url: ""};
 
     $scope.cancel = function() {
         $scope.dataPlace = vacationsData.cancel();
@@ -293,7 +320,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, vacation
 
     $scope.submitEdit = function(ref) {
         if(ref.address != ref.$address){
-            $rootScope.codeAddress(ref.address).then(function(responseGeo) {                
+            $scope.$parent.$parent.codeAddress(ref.address).then(function(responseGeo) {                
                 lat = responseGeo.lat();
                 lng = responseGeo.lng();
                 coords = lat +","+ lng;
@@ -314,7 +341,7 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, vacation
     }
 
     $scope.submitNew = function(ref) {   
-        $rootScope.codeAddress(ref.address).then(function(responseGeo) {
+        $scope.codeAddress(ref.address).then(function(responseGeo) {
             lat = responseGeo.lat();
             lng = responseGeo.lng();
             coords = lat +","+ lng;
@@ -332,304 +359,62 @@ vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, vacation
  */
 vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
     return {
-        restrict: "A",       
-        replace: true, 
-        //passar o template para templateUrl
-        //dividir em algumas firetivas diferentes, como por exemplo a parte da travel, do tipo de rota e do painel de direcoes
-        template:   '<div>'+
-                        '<div id="container-map"></div>'+
-                        '<div id="directions-panel"></div>'+                        
-                        '<div>'+                        
-                            '<h3>Tipo de Rota</h3>'+                        
-                            '<select id="mode" data-ng-model="route.type">'+
-                                '<option value="DRIVING">Driving</option>'+
-                                '<option value="WALKING">Walking</option>'+
-                                '<option value="BICYCLING">Bicycling</option>'+
-                                '<option value="TRANSIT">Transit</option>'+
-                            '</select>'+
-                        '</div>'+                        
-                        '<div>'+                        
-                            '<h3>Viagem</h3>'+                        
-                            '<div data-ng-hide="travel.$show">'+
-                                '<select data-ng-model="dataList.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in dataList.travels" data-ng-change="drawListPin()"></select>'+
-                                '{{dataList.travels[dataList.lastTravel].date | date:"shortDate"}}'+
-                                '<button type="button" data-ng-click="newTravel()">Nova Viagem</button>'+                                
-                                '<button type="button" data-ng-click="editTravel(dataList.travels[dataList.lastTravel].date)">Editar Viagem</button>'+                                
-                            '</div>'+
-
-                            '{{dataList.lastTravel}}'+
-                            '<div data-ng-show="travel.$show">'+                                
-                                '<form name="formTravel">'+
-                                    '<div class="form-group" data-ng-class="{error: formTravel.date.$invalid && formTravel.date.$dirty}">'+
-                                        '<label class="control-label">Data</label>'+
-                                        '<input class="form-control" type="date" placeholder="aaaa-mm-dd" name="date" data-ng-model="travel.date" required>'+
-                                        '{{travel.date}} <br>'+
-                                        '{{travel.date | date:"shortDate"}}'+
-                                    '</div>'+
-                                    '<button class="btn btn-default" type="button" data-ng-show="travel.$show" data-ng-click="travel.$show = false">Cancelar</button>'+
-                                    '<button class="btn btn-danger" type="button" data-ng-show="travel.$edit" data-ng-click="deleteTravel()">Remover</button>'+
-                                    '<button class="btn btn-primary" data-ng-hide="travel.$edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="submitNewTravel({date:travel.date})">Salvar</button>'+
-                                    '<button class="btn btn-primary" data-ng-show="travel.$edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="submitEditTravel({date:travel.date})">Editar</button>'+
-                                '</form>'+
-                            '</div>'+
-                        '</div>'+
-                        // '<button data-ng-click="calcRoute()">Calc Route</button>'+
-                        // '<button data-ng-click="removeRoute()">Remove Route</button>'+
-                    '</div>',
+        restrict: "E",       
+        replace: true,
+        transclude: true,
+        scope:{
+            map:"@", 
+            mapOpt:"=", 
+            obj:"=",           
 
 
-        
-        
-        link: function (scope, elem, attrs) {
+            idCombo: "@",
+            idPannel: "@",
+            type: "=",
+            r: "="
+        },
+        controller: function($scope, $element, $attrs){
+            $scope.places = $scope.obj.travels[$scope.obj.lastTravel].places;
+            $scope.spritePinUrl = "../images/sprite_pin.png",
+            $scope.pins = [];
+            $scope.bgPositionX = 0;
+            $scope.arrayPins = [];
+            $scope.marker = [];
+            $scope.infowindow = new google.maps.InfoWindow({
+                maxWidth: 500
+            });
+            $rootScope.map = [];
+
+
             var marker,
-                infowindow,
-                geocoder,
                 lat,
                 lng,
-                valGeocode,
                 coords,
-                pins = [],
-                bgPositionX = 0,
-                spritePinUrl = "../images/sprite_pin.png",
-                spritePinUrlOrigin = "../images/sprite_pin_origin.png",
-                spritePinUrlDestination = "../images/sprite_pin_destination.png",                
+                bgPositionX = 0,                
                 i,
                 j,
-                cont = 0;
+                spritePinUrlOrigin = "../images/sprite_pin_origin.png",
+                spritePinUrlDestination = "../images/sprite_pin_destination.png";
 
             var directionsDisplay;
-            var directionsService = new google.maps.DirectionsService();    
-            geocoder = new google.maps.Geocoder();        
+            var directionsService = new google.maps.DirectionsService();                
 
+            $scope.calcRoute = function(){
+                var fieldRoute = document.getElementById($attrs.idCombo),
+                    pannelRoute = document.getElementById($attrs.idPannel);
 
-            $rootScope.drawNewPin = function(pinData){
-                var defer = $q.defer();                
-                
-                //cria a tooltip do pin
-                infowindow = new google.maps.InfoWindow({
-                    maxWidth: 500
-                });
-                
-                lat = pinData.position.split(",")[0];
-                lng = pinData.position.split(",")[1];
-
-                marker = new google.maps.Marker({
-                    position : new google.maps.LatLng(lat, lng),
-                    map : $rootScope.map,
-                    pinId : pinData.id,
-                    pinName : pinData.name,
-                    pinAddress : pinData.address,
-                    pinUrl : pinData.url,
-                    icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
-                    zIndex: 100
-                });
-
-                google.maps.event.addListener(marker, 'mouseover', function() {
-                    infowindow.close(); 
-                    infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-                    infowindow.open($rootScope.map, this); 
-                });
-
-                
-                google.maps.event.addListener(marker, 'click', function() {
-                    if(scope.route.origin == false){
-                        scope.route.origin = this.position;
-                        this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                    }
-                    else if(this.getIcon().url != "../images/sprite_pin.png"){
-                        scope.route.origin = false;
-                        scope.route.destination = false;
-                        $rootScope.removeRoute();
-
-                        for (var i = 0; i < pins.length; i++) {
-                            pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                        }                            
-                    }
-                    else if(scope.route.destination == false){
-                        scope.route.destination = this.position;
-                        this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
-
-                        $rootScope.calcRoute();
-                    }
-                    else if(this.getIcon().url != "../images/sprite_pin.png"){
-                        scope.route.destination = false;
-                        this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                    }
-                    else{
-                        scope.route.origin = false;
-                        scope.route.destination = false;
-                        $rootScope.removeRoute();
-
-                        for (var i = 0; i < pins.length; i++) {
-                            pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                        }                            
-
-                        scope.route.origin = this.position;
-                        this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                    }
-                });
-
-                pins.push(marker);
-
-                bgPositionX += 40;
-
-                marker.setMap($rootScope.map);           
-
-                $rootScope.setCenter(pinData.position);
-            }
-
-
-            //fazer uma diretiva pra isso? Talvez um controller ou service!
-            $rootScope.codeAddress = function(address) {
-                var deferred = $q.defer();
-                valGeocode = "";
-              
-                geocoder.geocode( { 'address': address}, function(results, status) {                   
-                    if (status == google.maps.GeocoderStatus.OK) {
-                        
-                        valGeocode = results[0].geometry.location;
-                    }
-                    else {
-                        alert('Geocode was not successful for the following reason: ' + status);
-                    }
-
-                    deferred.resolve(valGeocode);                    
-                });
-
-                return deferred.promise;                
-            }
-
-            scope.initializeMap = function(){
-                var mapOptions = {
-                    zoom: scope.options.zoom,
-                    center: new google.maps.LatLng(scope.options.centerLat, scope.options.centerLong),
-                    minZoom: scope.options.minZoom,
-                    rotateControl: scope.options.rotateControl,
-                    streetViewControl: scope.options.streetViewControl
-                };
-                
-                directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
-
-                var iniMap = new google.maps.Map(document.getElementById('container-map'), mapOptions);
-
-                // google.maps.event.trigger(iniMap, 'resize');
-
-                Map.setMap(iniMap);
-            };
-
-            scope.getListPin = function(){
-                var places = scope.dataList.travels[scope.dataList.lastTravel].places;
-
-                //limpa os pins
-                for (var i = 0; i < pins.length; i++) {
-                    pins[i].setMap(null);
-                }
-                pins = [];
-                bgPositionX = 0;
-
-                //cria a tooltip do pin
-                infowindow = new google.maps.InfoWindow({
-                    maxWidth: 500
-                });
-
-                
-                for (i in places){                    
-
-                    lat = places[i].position.split(",")[0];
-                    lng = places[i].position.split(",")[1];
-
-                    marker = new google.maps.Marker({
-                        position : new google.maps.LatLng(lat, lng),
-                        map : $rootScope.map,
-                        pinId : places[i].id,
-                        pinName : places[i].name,
-                        pinAddress : places[i].address,
-                        pinUrl : places[i].url,
-                        icon: {url : spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point(bgPositionX,0) },
-                        zIndex: 100
-                    });
-
-                    google.maps.event.addListener(marker, 'mouseover', function() {
-                        infowindow.close(); 
-                        infowindow.setContent("<div id='"+ this.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ this.pinUrl +"' target='_blank'>"+ this.pinName +"</a></h3><p>"+ this.pinAddress +"<p></div>"); 
-                        infowindow.open($rootScope.map, this); 
-                    });
-
-                    
-                    google.maps.event.addListener(marker, 'click', function() {
-                        if(scope.route.origin == false){
-                            scope.route.origin = this.position;
-                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                        else if(this.getIcon().url != "../images/sprite_pin.png"){
-                            scope.route.origin = false;
-                            scope.route.destination = false;
-                            $rootScope.removeRoute();
-
-                            for (var i = 0; i < pins.length; i++) {
-                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                            }                            
-                        }
-                        else if(scope.route.destination == false){
-                            scope.route.destination = this.position;
-                            this.setIcon({url : spritePinUrlDestination, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});
-
-                            $rootScope.calcRoute();
-                        }
-                        else if(this.getIcon().url != "../images/sprite_pin.png"){
-                            scope.route.destination = false;
-                            this.setIcon({url : spritePinUrl, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                        else{
-                            scope.route.origin = false;
-                            scope.route.destination = false;
-                            $rootScope.removeRoute();
-
-                            for (var i = 0; i < pins.length; i++) {
-                                pins[i].setIcon({url : spritePinUrl, size :pins[i].getIcon().size , origin:new google.maps.Point(pins[i].getIcon().origin.x,pins[i].getIcon().origin.y)});
-                            }                            
-
-                            scope.route.origin = this.position;
-                            this.setIcon({url : spritePinUrlOrigin, size :this.getIcon().size , origin:new google.maps.Point(this.getIcon().origin.x,this.getIcon().origin.y)});    
-                        }
-                    });
-
-                    pins.push(marker);
-
-                    bgPositionX += 40;
-
-                    cont++;                 
-                }
-                return pins;
-            };
-
-            $rootScope.drawListPin = function(){                
-                var arrayPins = scope.getListPin();                    
-
-                for(i = 0; i < arrayPins.length; i++){
-                    arrayPins[0].setMap($rootScope.map);
-                }
-            }            
-
-            //fazer uma diretiva pra isso;
-            $rootScope.calcRoute = function(){                
                 directionsDisplay.suppressMarkers = true;
                 directionsDisplay.setMap($rootScope.map);
-                directionsDisplay.setPanel(document.getElementById('directions-panel'));
+                directionsDisplay.setPanel(pannelRoute);
 
-                //que porra é essa?
-                var haight = new google.maps.LatLng(51.5034412,-0.119678199999953);
-                var oceanBeach = new google.maps.LatLng(51.4034412,-0.109678199999953);
-
-                var selectedMode = document.getElementById('mode').value;
                 var request = {
                     durationInTraffic: true,
-                    origin: scope.route.origin,
-                    destination: scope.route.destination,
+                    origin: $scope.r.origin,
+                    destination: $scope.r.destination,
                     // Note that Javascript allows us to access the constant
                     // using square brackets and a string value as its
                     // "property."
-                    travelMode: google.maps.TravelMode[selectedMode]
+                    travelMode: google.maps.TravelMode[fieldRoute.value]
                 };
 
                 directionsService.route(request, function(response, status) {
@@ -637,26 +422,198 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
                         directionsDisplay.setDirections(response);
                     }
                 });
-            }
+            };
 
-            $rootScope.removeRoute = function(){
+            $scope.removeRoute = function(){
                 directionsDisplay.setMap();
                 directionsDisplay.setPanel();
             };
 
-            $rootScope.setCenter = function(position){
-                $rootScope.map.setCenter(new google.maps.LatLng(position.split(",")[0], position.split(",")[1]));
-                $rootScope.map.setZoom(15);
-            };           
-                    
-            if(scope.user.uid){
-                // alert('oi');
-                google.maps.event.addDomListener(window, 'load', scope.initializeMap());
-                // scope.initializeMap();
-                $rootScope.map = Map.getMap(); 
-                
-                $rootScope.drawListPin();
+            $scope.checkRoute = function(){
+                if($scope.r.origin && $scope.r.destination){
+                    this.calcRoute();
+                }
+            };            
 
+            $scope.initializeMap = function(){
+                var mapOptions = {
+                    zoom: $scope.mapOpt.zoom,
+                    center: new google.maps.LatLng($scope.mapOpt.centerLat, $scope.mapOpt.centerLong),
+                    minZoom: $scope.mapOpt.minZoom,
+                    rotateControl: $scope.mapOpt.rotateControl,
+                    streetViewControl: $scope.mapOpt.streetViewControl
+                };
+                
+                directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+
+                $rootScope.map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+                // $rootScope.map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+
+                
+
+                // google.maps.event.trigger(iniMap, 'resize');
+
+                // Map.setMap(iniMap);
+                // $rootScope.map = Map.getMap(); 
+
+                // console.log(Map.getMap());
+
+                $rootScope.drawListPin();
+            };            
+            
+            $scope.createNewPin = function(place){
+                lat = place.position.split(",")[0];
+                lng = place.position.split(",")[1];
+
+                $scope.marker = new google.maps.Marker({
+                    position : new google.maps.LatLng(lat, lng),
+                    map : $rootScope.map,
+                    pinId : place.id,
+                    pinName : place.name,
+                    pinAddress : place.address,
+                    pinUrl : place.url,
+                    icon: {url : $scope.spritePinUrl, size :{width:26,height:40} , origin:new google.maps.Point($scope.bgPositionX,0) },
+                    zIndex: 100
+                });
+
+                $scope.pins.push($scope.marker);
+
+                $scope.bgPositionX += 40;
+            }
+
+            $scope.getListPin = function(){
+
+                //limpa os pins
+                $scope.places = $scope.obj.travels[$scope.obj.lastTravel].places;
+                for (var i = 0; i < $scope.pins.length; i++) {
+                    $scope.pins[i].setMap(null);
+                }
+                $scope.pins = [];
+                $scope.bgPositionX = 0;
+
+                //cria os pins para cada lugar
+                angular.forEach($scope.places, function(value, key) {
+                    $scope.createNewPin(value);
+                });
+                
+                //retorna a listagem de pins
+                return $scope.pins;
+            };
+
+            
+
+            $scope.addTooltip = function(infoW, pin){
+                infoW.close(); 
+                infoW.setContent("<div id='"+ pin.pinId +"' class='tooltip-map'><h3 class='sub-title-2' style='margin-bottom:5px; padding-bottom:0; white-space:nowrap;'><a href='"+ pin.pinUrl +"' target='_blank'>"+ pin.pinName +"</a></h3><p>"+ pin.pinAddress +"<p></div>"); 
+                infoW.open($rootScope.map, pin); 
+            }
+
+            $scope.selectPin = function(pin){
+                if($scope.r.origin == false){
+                    $scope.r.origin = pin.position;
+                    pin.setIcon({url : spritePinUrlOrigin, size :pin.getIcon().size , origin:new google.maps.Point(pin.getIcon().origin.x,pin.getIcon().origin.y)});    
+                }
+                //pegar a imagem de um atributo da diretiva
+                else if(pin.getIcon().url != "../images/sprite_pin.png"){
+                    $scope.r.origin = false;
+                    $scope.r.destination = false;
+                    $scope.removeRoute();
+
+                    angular.forEach($scope.pins, function(val, k) {
+                        val.setIcon({url : $scope.spritePinUrl, size :val.getIcon().size , origin:new google.maps.Point(val.getIcon().origin.x,val.getIcon().origin.y)});
+                    });
+                }
+                else if($scope.r.destination == false){
+                    $scope.r.destination = pin.position;
+                    pin.setIcon({url : spritePinUrlDestination, size :pin.getIcon().size , origin:new google.maps.Point(pin.getIcon().origin.x,pin.getIcon().origin.y)});
+
+                    $scope.calcRoute();
+                }
+                else if(pin.getIcon().url != "../images/sprite_pin.png"){
+                    $scope.r.destination = false;
+                    pin.setIcon({url : $scope.spritePinUrl, size :pin.getIcon().size , origin:new google.maps.Point(pin.getIcon().origin.x,pin.getIcon().origin.y)});    
+                }
+                else{
+                    $scope.r.origin = false;
+                    $scope.r.destination = false;
+                    $scope.removeRoute();
+
+                    angular.forEach($scope.pins, function(val, k) {
+                        val.setIcon({url : $scope.spritePinUrl, size :val.getIcon().size , origin:new google.maps.Point(val.getIcon().origin.x,val.getIcon().origin.y)});
+                    });
+
+                    $scope.r.origin = pin.position;
+                    pin.setIcon({url : spritePinUrlOrigin, size :pin.getIcon().size , origin:new google.maps.Point(pin.getIcon().origin.x,pin.getIcon().origin.y)});    
+                }
+            }
+
+
+
+
+        },
+        // require: "mapRoute",
+        //passar o template para templateUrl
+        //dividir em algumas firetivas diferentes, como por exemplo a parte da travel, do tipo de rota e do painel de direcoes
+        template:   '<div>'+
+                        '<div id="container-map"></div>'+
+
+                        '<div>'+                        
+                            '<h3>Tipo de Rota</h3>'+                        
+                            '<select id="{{idCombo}}" data-ng-model="r.type" data-ng-change="checkRoute()">'+
+                            // '<select id="{{idCombo}}" data-ng-model="r.type" data-ng-change="scope.route.origin && scope.route.destination calcRoute()">'+
+                                '<option value="DRIVING">Driving</option>'+
+                                '<option value="WALKING">Walking</option>'+
+                                '<option value="BICYCLING">Bicycling</option>'+
+                                '<option value="TRANSIT">Transit</option>'+
+                            '</select>'+
+                            // '<button data-ng-click="calcRoute()">Calc Route</button>'+
+                            // '<button data-ng-click="removeRoute()">Remove Route</button>'+
+                        '</div>'+
+
+                        '<div ng-transclude></div>'+
+                        
+                    '</div>',
+        
+        link: function (scope, elem, attrs) {            
+            
+            $rootScope.drawNewPin = function(pinData){
+                scope.createNewPin(pinData);
+
+                google.maps.event.addListener(scope.marker, 'mouseover', function() {
+                    scope.addTooltip(scope.infowindow, this);
+                });
+
+                //isso vai para o link
+                google.maps.event.addListener(scope.marker, 'click', function() {
+                    scope.selectPin(this);
+                });
+                
+                scope.marker.setMap($rootScope.map);           
+
+                scope.$parent.setCenter(pinData.position);
+            }
+
+            $rootScope.drawListPin = function(){
+                scope.arrayPins = scope.getListPin();                
+
+                angular.forEach(scope.arrayPins, function(value, key) {
+                    scope.arrayPins[0].setMap($rootScope.map);
+
+                    google.maps.event.addListener(value, 'mouseover', function() {
+                        scope.addTooltip(scope.infowindow, this);
+                    });
+
+                    google.maps.event.addListener(value, 'click', function() {
+                        scope.selectPin(this);
+                    });
+                });
+            }
+
+                    
+            if($rootScope.user.uid){
+                google.maps.event.addDomListener(window, 'load', scope.initializeMap());
+
+                $rootScope.drawListPin();
 
                 // scope.$watch(scope.dataList, function(newValue, oldValue) {
                 //       if (newValue !== oldValue) {
@@ -666,12 +623,89 @@ vacationsApp.directive('drawMap', function ($rootScope, $q, Map) {
                 //   }, true);
 
             }
-            else{
-                //console.log("else scope.user");
-            }
             
         }
     }
+});
+
+vacationsApp.directive("mapTravel", function($rootScope) {
+    return {
+        restrict: 'E',
+        replace: true,
+        scope: {
+            obj:"=",
+            tr:"=",
+            newTravel:"&",
+            editTravel:"&",
+            deleteTravel:"&",
+            subNewTravel:"&",
+            subEditTravel:"&"
+        },
+        template:   '<div>'+                        
+                        '<h3>Viagem</h3>'+          
+
+                        '<div data-ng-hide="{{tr.show}}">'+
+                            '<select data-ng-model="obj.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in obj.travels" data-ng-change="drawListPin()"></select>'+
+                            '{{obj.travels[obj.lastTravel].date | date:"shortDate"}}'+
+                            '<button type="button" data-ng-click="newTravel()">Nova Viagem</button>'+                                
+                            '<button type="button" data-ng-click="editTravel({date:obj.travels[obj.lastTravel].date})">Editar Viagem</button>'+                                
+                        '</div>'+
+
+                        '{{obj.lastTravel}}'+
+                        '<div data-ng-show="tr.show">'+                                
+                            '<form name="formTravel">'+
+                                '<div class="form-group" data-ng-class="{error: formTravel.date.$invalid && formTravel.date.$dirty}">'+
+                                    '<label class="control-label">Data</label>'+
+                                    '<input class="form-control" type="date" placeholder="aaaa-mm-dd" name="date" data-ng-model="tr.date" required>'+
+                                    '{{tr.date}} <br>'+
+                                    '{{tr.date | date:"shortDate"}}'+
+                                '</div>'+
+                                '<button class="btn btn-default" type="button" data-ng-show="tr.show" data-ng-click="tr.show = false">Cancelar</button>'+
+                                '<button class="btn btn-danger" type="button" data-ng-show="tr.edit" data-ng-click="deleteTravel()">Remover</button>'+
+                                '<button class="btn btn-primary" data-ng-hide="tr.edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="subNewTravel({date:tr.date})">Salvar</button>'+
+                                '{{tr.date}}'+
+                                '<button class="btn btn-primary" data-ng-show="tr.edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="subEditTravel({date:tr.date})">Editar</button>'+
+                            '</form>'+
+                        '</div>'+
+                    '</div>',
+        
+
+        link: function (scope, elem, attrs) {
+
+
+            // scope.calcRoute = function(){                
+                // var field = (document.getElementById(attrs.idCombo));
+
+
+
+                // directionsDisplay.suppressMarkers = true;
+                // directionsDisplay.setMap($rootScope.map);
+                // directionsDisplay.setPanel(document.getElementById('directions-panel'));
+
+                // //que porra é essa?
+                // // var haight = new google.maps.LatLng(51.5034412,-0.119678199999953);
+                // // var oceanBeach = new google.maps.LatLng(51.4034412,-0.109678199999953);
+
+                // var selectedMode = document.getElementById('mode').value;
+                // var request = {
+                //     durationInTraffic: true,
+                //     origin: scope.route.origin,
+                //     destination: scope.route.destination,
+                //     // Note that Javascript allows us to access the constant
+                //     // using square brackets and a string value as its
+                //     // "property."
+                //     travelMode: google.maps.TravelMode[selectedMode]
+                // };
+
+                // directionsService.route(request, function(response, status) {
+                //     if (status == google.maps.DirectionsStatus.OK) {
+                //         directionsDisplay.setDirections(response);
+                //     }
+                // });
+            // }
+
+        }
+    };
 });
 
 vacationsApp.directive("mapAutocomplete", function($rootScope) {
@@ -725,6 +759,7 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         var idRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel +"/places/"+ id);
         idRef.remove(function(){
             console.log("Deletado!!!");
+            console.log($rootScope);
             $rootScope.drawListPin();
         });
     },
@@ -750,40 +785,38 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
 
         newPushRef.set({position: coords, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url}, function(){
             console.log("Adicionado!!!");
-            $rootScope.drawNewPin({position: coords, id: newPushRef.name(), name: data.name, address: data.address, category: data.category, url: data.url});
+            $rootScope.drawNewPin({address: data.address, category: data.category, id: newPushRef.name(), name: data.name, position: coords, url: data.url});
         });
     },    
     this.cancelTravel = function() {
-        storeData = {$show: false, $edit: false, date: ""};
+        storeData = {show: false, edit: false, date: ""};
         return storeData;
     },
     this.editTravel = function(data) {
-        storeData = {$show: true, $edit: true, date: data};
+        storeData = {show: true, edit: true, date: data};
         return storeData;
     },
-    this.submitEditTravel = function(user, travel, data) {
+    this.submitEditTravel = function(user, travel, date) {
         var lastTravelRef = fireFactory.firebaseRef("users/" + user);
         lastTravelRef.update({lastTravel: travel}, function(){
             console.log("Last Travel Editado!!!");
         });
 
         var travelRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel);
-        travelRef.update({date: data.date}, function(){
+        travelRef.update({date: date}, function(){
             console.log("Travel Editado!!!");
         });
     },
     this.newTravel = function() {
-        storeData = {$show: true, $edit: false, date: ""};
+        storeData = {show: true, edit: false, date: ""};
         return storeData;
     },
-    this.submitNewTravel = function(user, data) {
-
-        console.log(user);
+    this.submitNewTravel = function(user, date) {
 
         var travelRef = fireFactory.firebaseRef("users/" + user + "/travels/");
         var newPushRef = travelRef.push();
 
-        newPushRef.set({id: newPushRef.name(), date: data.date, places: ""}, function(){
+        newPushRef.set({id: newPushRef.name(), date: date, places: ""}, function(){
             console.log("Travel Adicionado!!!");
         });
 
