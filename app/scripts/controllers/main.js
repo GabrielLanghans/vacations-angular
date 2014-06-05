@@ -199,18 +199,35 @@ vacationsApp.controller("MapCtrl", function($rootScope, $scope, $filter, $q, vac
         });
     });
 
-    var i;
+    var i,
+        getFirstItem = false,
+        latIni,
+        lngIni;
 
-    $scope.options = {
+
+    angular.forEach($scope.dataList.travels[$scope.dataList.lastTravel].places, function(value, key) {
+       if(!getFirstItem){
+            getFirstItem = true;
+            latIni = value.position.split(',')[0];
+            lngIni = value.position.split(',')[1];
+        }
+    });
+
+    // console.log($scope.dataList.travels[$scope.dataList.lastTravel].places.length);
+
+    $scope.mapOptions = {
         zoom: 10,
         //centerLat: $scope.markers[$scope.markers.length-1].position.split(",")[0],
-        centerLat: "51.5227504",
+        // centerLat: "51.5227504",
         //centerLong: $scope.markers[$scope.markers.length-1].position.split(",")[1],     
-        centerLong: "-0.15506379999999353",     
+        // centerLong: "-0.15506379999999353",     
+
+        center: new google.maps.LatLng(latIni, lngIni),
+        // center: new google.maps.LatLng($scope.mapOpt.centerLat, $scope.mapOpt.centerLong),
         minZoom: 5,    
         rotateControl: false,
         streetViewControl: false        
-    }
+    }    
 
     if(($scope.dataList.lastTravel === undefined) || ($scope.dataList.lastTravel === "")){
         $scope.travel.show = true;
@@ -250,7 +267,6 @@ vacationsApp.controller("MapCtrl", function($rootScope, $scope, $filter, $q, vac
     }
 
     $scope.submitNewTravel = function(ref) { 
-        console.log(ref);
         vacationsData.submitNewTravel($rootScope.user.uid, ref);        
 
         this.cancelTravel();        
@@ -267,18 +283,42 @@ vacationsApp.controller("MapCtrl", function($rootScope, $scope, $filter, $q, vac
     }
     $scope.deleteTravel = function() {
         var newLastTravel,
-            keepGoing = true;
+            keepGoing = true,
+            lat,
+            lng;
 
         angular.forEach($scope.dataList.travels, function(value, key) {
            if(keepGoing && (value.id !== $scope.dataList.lastTravel)){
                 newLastTravel = value.id;
-                keepGoing = false;
+
+                angular.forEach($scope.dataList.travels[newLastTravel].places, function(val, k) {
+                    if(keepGoing){
+                        keepGoing = false;
+
+                        $scope.setCenter(val.position);
+                    }
+                });
             }
         });
         
         vacationsData.deleteTravel($rootScope.user.uid, $scope.dataList.lastTravel, newLastTravel);
 
         this.cancelTravel();        
+    }
+    $scope.submitEditLastTravel = function(ref) {   
+        var getFirstItem = false,
+            lat,
+            lng;
+
+        vacationsData.submitEditLastTravel($rootScope.user.uid, ref);
+
+        angular.forEach($scope.dataList.travels[ref].places, function(value, key) {
+           if(!getFirstItem){                
+                $scope.setCenter(value.position);
+
+                getFirstItem = true;
+            }
+        });
     }
 });
 
@@ -381,6 +421,7 @@ vacationsApp.directive('drawMap', function ($rootScope) {
             $rootScope.map = {};
 
             $scope.places = $scope.obj.travels[$scope.obj.lastTravel].places;
+            $scope.showMap = false;
             $scope.spritePinUrl = "../images/sprite_pin.png",
             $scope.pins = {};
             $scope.bgPositionX = 0;
@@ -402,6 +443,15 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 
             var directionsDisplay;
             var directionsService = new google.maps.DirectionsService();                
+
+            
+
+            if($scope.places === '' || $scope.places === undefined){
+                $scope.showMap = false;
+            }
+            else{
+                $scope.showMap = true;
+            }
 
             $scope.calcRoute = function(){
                 var fieldRoute = document.getElementById($attrs.idCombo),
@@ -476,9 +526,7 @@ vacationsApp.directive('drawMap', function ($rootScope) {
                 
                 //retorna a listagem de pins
                 return $scope.pins;
-            };
-
-            
+            };            
 
             $scope.addTooltip = function(infoW, pin){
                 infoW.close(); 
@@ -542,17 +590,9 @@ vacationsApp.directive('drawMap', function ($rootScope) {
             }
 
             $scope.initializeMap = function(){
-                var mapOptions = {
-                    zoom: $scope.mapOpt.zoom,
-                    center: new google.maps.LatLng($scope.mapOpt.centerLat, $scope.mapOpt.centerLong),
-                    minZoom: $scope.mapOpt.minZoom,
-                    rotateControl: $scope.mapOpt.rotateControl,
-                    streetViewControl: $scope.mapOpt.streetViewControl
-                };
-                
                 directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
 
-                $rootScope.map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
+                $rootScope.map = new google.maps.Map(document.getElementById('container-map'), $scope.mapOpt);
                 // $rootScope.map = new google.maps.Map(document.getElementById('container-map'), mapOptions);
 
                 
@@ -569,12 +609,28 @@ vacationsApp.directive('drawMap', function ($rootScope) {
 
             this.drawListPin = $scope.drawListPin;
 
+            this.toggleMap = function(lastT){
+                // precisa atualizar o gmaps tb pq quando mostra ele quando ele veio fechado de inicio, ele mostra bugado. De repente fazer ele sempre mostrar e depois verificar e esconder.
+
+                //fazer essa atualização no nova viagem e no delete viagem tb!!!! talvez tenha que passar essa verificação para o controller do mapa, que dessa forma fica acessível aqui dentro também
+
+                if($scope.obj.travels[lastT].places === '' || $scope.obj.travels[lastT].places === undefined){
+                    $scope.showMap = false;
+                }
+                else{
+                    $scope.showMap = true;
+                }
+            }
+
         },
         // require: "mapRoute",
         //passar o template para templateUrl
         //dividir em algumas firetivas diferentes, como por exemplo a parte da travel, do tipo de rota e do painel de direcoes
         template:   '<div>'+
-                        '<div id="container-map"></div>'+
+                        //pegar o id pelo scoope map que é passado (ta bugando pois ele tenta renderizar o mapa antes disso!)
+                        '<div id="container-map" data-ng-show="showMap"></div>'+
+
+                        '<div data-ng-hide="showMap">Adicione uma atração pra começar a brincadeira!!!!!!!!!!</div>'+
 
                         '<div>'+                        
                             '<h3>Tipo de Rota</h3>'+                        
@@ -610,6 +666,15 @@ vacationsApp.directive('drawMap', function ($rootScope) {
                     console.log('newValue', newValue);
                     console.log('oldValue', oldValue);
 
+                    if (newValue !== oldValue) {
+                        // You actions here
+                        scope.drawListPin();
+                    }
+                });
+
+                scope.$watch('obj.lastTravel', function(newValue, oldValue) {
+                    // alert('lasttravel atualizado')
+
                       if (newValue !== oldValue) {
                         // You actions here
                         scope.drawListPin();
@@ -643,7 +708,8 @@ vacationsApp.directive("mapTravel", function($rootScope) {
             deleteTravel:"&",
             subNewTravel:"&",
             subEditTravel:"&",
-            drawListPin:"&"
+            drawListPin:"&",
+            subEditLTravel:"&"
         },
         template:   '<div>'+                        
                         '<h3>Viagem</h3>'+          
@@ -677,7 +743,10 @@ vacationsApp.directive("mapTravel", function($rootScope) {
         link: function (scope, elem, attrs, drawMapCtrl) {
 
             scope.drawPin = function(){
-                drawMapCtrl.drawListPin();
+                drawMapCtrl.drawListPin();                
+                scope.subEditLTravel({lastTravel: scope.obj.lastTravel});
+
+                drawMapCtrl.toggleMap(scope.obj.lastTravel);
             }
         }
     };
@@ -691,7 +760,7 @@ vacationsApp.directive("mapAutocomplete", function($rootScope) {
                 autocomplete = new google.maps.places.Autocomplete(field),
                 address;
 
-            //rever esse rootscope.map. Não da pra usar scope?
+            //rever esse rootscope.map. Não da pra usar scope? ou pegar o valor de uma factory?
             autocomplete.bindTo('bounds', $rootScope.map);
 
             google.maps.event.addListener(autocomplete, 'place_changed', function() {
@@ -811,7 +880,13 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         lastTravelRef.update({lastTravel: data}, function(){
             console.log("Last Travel Editado!!!");
         });
-    }    
+    },
+    this.submitEditLastTravel = function (user, data){
+        var lastTravelRef = fireFactory.firebaseRef("users/" + user);
+        lastTravelRef.update({lastTravel: data}, function(){
+            console.log("Last Travel Editado!!!");
+        });
+    }
 });
 
 
