@@ -194,8 +194,8 @@ vacationsApp.controller("MapCtrl", function($rootScope, $scope, $filter, $q, vac
 
     var i,
         getFirstItem = false,
-        latIni,
-        lngIni;
+        latIni = '-15.127750417479286',
+        lngIni = '-53.18050174999996';
 
 
     //escuta pela mudanca das travels para atualizar no model para padrao de data (usando filtro de data)
@@ -205,13 +205,15 @@ vacationsApp.controller("MapCtrl", function($rootScope, $scope, $filter, $q, vac
         });
     });
 
-    angular.forEach($scope.dataList.travels[$scope.dataList.lastTravel].places, function(value, key) {
-       if(!getFirstItem){
-            getFirstItem = true;
-            latIni = value.position.split(',')[0];
-            lngIni = value.position.split(',')[1];
-        }
-    });
+    if($scope.dataList.travels !== '' && $scope.dataList.travels !== undefined){
+        angular.forEach($scope.dataList.travels[$scope.dataList.lastTravel].places, function(value, key) {
+           if(!getFirstItem){
+                getFirstItem = true;
+                latIni = value.position.split(',')[0];
+                lngIni = value.position.split(',')[1];
+            }
+        });    
+    }
 
     $scope.mapOptions = {
         zoom: 10,
@@ -333,6 +335,8 @@ vacationsApp.controller("NavCtrl", function($scope){
     $scope.isSelected = function(section) {
         return $scope.selected === section;
     }    
+
+    $scope.setPage('Atrações');
 });
 
 vacationsApp.controller("AttractionsCtrl", function($scope, $rootScope, vacationsData){
@@ -419,16 +423,26 @@ vacationsApp.directive('drawMap', function ($rootScope) {
         controller: function($scope, $element, $attrs){
             $rootScope.map = {};
 
-            $scope.places = $scope.obj.travels[$scope.obj.lastTravel].places;            
+
+            $scope.showMap = false;
             $scope.spritePinUrl = "../images/sprite_pin.png",
             $scope.pins = {};
             $scope.bgPositionX = 0;
             $scope.arrayPins = {};
             $scope.marker = {};
-            $scope.showMap = false;
             $scope.infowindow = new google.maps.InfoWindow({
                 maxWidth: 500
             });
+
+            if($scope.obj.travels !== '' && $scope.obj.travels !== undefined){
+                $scope.showMap = true;
+                $scope.places = $scope.obj.travels[$scope.obj.lastTravel].places;            
+            }
+            else{
+                $scope.showMap = false;
+            }
+            
+
 
             var marker,
                 lat,
@@ -444,15 +458,14 @@ vacationsApp.directive('drawMap', function ($rootScope) {
             var directionsService = new google.maps.DirectionsService();                
 
             
-            if($scope.places === '' || $scope.places === undefined){
-                $scope.showMap = false;
-            }
-            else{
-                $scope.showMap = true;
-            }
+            
             
             $scope.toggleMap = function(lastT){
                 // precisa atualizar o gmaps tb pq quando mostra ele quando ele veio fechado de inicio, ele mostra bugado. De repente fazer ele sempre mostrar e depois verificar e esconder.
+
+                console.log('=====');
+                console.log('lastT', lastT);
+                console.log('=====');
 
                 if($scope.obj.travels[lastT].places === '' || $scope.obj.travels[lastT].places === undefined){
                     $scope.showMap = false;
@@ -521,17 +534,20 @@ vacationsApp.directive('drawMap', function ($rootScope) {
             $scope.getListPin = function(){
 
                 //limpa os pins
-                $scope.places = $scope.obj.travels[$scope.obj.lastTravel].places;
-                for (var i = 0; i < $scope.pins.length; i++) {
-                    $scope.pins[i].setMap(null);
-                }
-                $scope.pins = [];
-                $scope.bgPositionX = 0;
+                if(($scope.obj.travels !== '' && $scope.obj.travels !== undefined) && ($scope.obj.lastTravel !== '' && $scope.obj.lastTravel !== undefined)){
+                    $scope.places = $scope.obj.travels[$scope.obj.lastTravel].places;
+                    for (var i = 0; i < $scope.pins.length; i++) {
+                        $scope.pins[i].setMap(null);
+                    }
+                    $scope.pins = [];
+                    $scope.bgPositionX = 0;
 
-                //cria os pins para cada lugar
-                angular.forEach($scope.places, function(value, key) {
-                    $scope.createNewPin(value);
-                });
+                    //cria os pins para cada lugar
+                    angular.forEach($scope.places, function(value, key) {
+                        $scope.createNewPin(value);
+                    });
+                }
+                $scope.pins = [];                
                 
                 //retorna a listagem de pins
                 return $scope.pins;
@@ -678,7 +694,7 @@ vacationsApp.directive("mapTravel", function($rootScope) {
         template:   '<div>'+                        
                         '<h3>Viagem</h3>'+          
 
-                        '<div data-ng-hide="{{tr.show}}">'+
+                        '<div data-ng-hide="tr.show">'+
                             '<select data-ng-model="obj.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in obj.travels" data-ng-change="changeTravel()"></select>'+
                             '{{obj.travels[obj.lastTravel].date | date:"shortDate"}}'+
                             '<button type="button" data-ng-click="newTravel()">Nova Viagem</button>'+                                

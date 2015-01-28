@@ -31,11 +31,13 @@
     </div>    -->
     
     <div class="container" data-ng-controller="NavCtrl">
+    OIOIOI
+
         <ul class="nav nav-tabs">
             <li data-ng-repeat="item in menu" data-ng-click="setPage(item)" data-ng-class="{active : isSelected(item)}"><a href="javascript:void(0);">{{item}}</a></li>
         </ul>
 
-        <!-- {{selected}} -->
+        SELECTED {{selected}}
 
         <div ng-switch on="selected">
             <!-- <div id="attractions" ng-switch-default>
