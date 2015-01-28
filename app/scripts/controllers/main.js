@@ -205,6 +205,8 @@ vacationsApp.controller("MapCtrl", function($rootScope, $scope, $filter, $q, vac
         });
     });
 
+    console.log($scope.dataList.travels);
+
     if($scope.dataList.travels !== '' && $scope.dataList.travels !== undefined){
         angular.forEach($scope.dataList.travels[$scope.dataList.lastTravel].places, function(value, key) {
            if(!getFirstItem){
@@ -467,7 +469,7 @@ vacationsApp.directive('drawMap', function ($rootScope) {
                 console.log('lastT', lastT);
                 console.log('=====');
 
-                if($scope.obj.travels[lastT].places === '' || $scope.obj.travels[lastT].places === undefined){
+                if(($scope.obj.travels === '' && $scope.obj.travels === undefined) && ($scope.obj.travels[lastT].places === '' && $scope.obj.travels[lastT].places === undefined)){
                     $scope.showMap = false;
                 }
                 else{
@@ -693,6 +695,7 @@ vacationsApp.directive("mapTravel", function($rootScope) {
         },
         template:   '<div>'+                        
                         '<h3>Viagem</h3>'+          
+                        // '<h3>nro travels: {{ (obj.travels | toArray).length }}</h3>'+          
 
                         '<div data-ng-hide="tr.show">'+
                             '<select data-ng-model="obj.lastTravel" data-ng-options="travel.id as travel.date for (key, travel) in obj.travels" data-ng-change="changeTravel()"></select>'+
@@ -711,7 +714,7 @@ vacationsApp.directive("mapTravel", function($rootScope) {
                                     '{{tr.date | date:"shortDate"}}'+
                                 '</div>'+
                                 '<button class="btn btn-default" type="button" data-ng-show="tr.show" data-ng-click="tr.show = false">Cancelar</button>'+
-                                '<button class="btn btn-danger" type="button" data-ng-show="tr.edit" data-ng-click="deleteTravel()">Remover</button>'+
+                                '<button class="btn btn-danger" type="button" data-ng-show="tr.edit && (obj.travels | toArray).length > 1" data-ng-click="deleteTravel()">Remover</button>'+
                                 '<button class="btn btn-primary" data-ng-hide="tr.edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="subNewTravel({date:tr.date})">Salvar</button>'+
                                 '{{tr.date}}'+
                                 '<button class="btn btn-primary" data-ng-show="tr.edit" data-ng-disabled="formTravel.$invalid" type="button" data-ng-click="subEditTravel({date:tr.date})">Editar</button>'+
@@ -850,16 +853,24 @@ vacationsApp.service('vacationsData', function ($rootScope, fireFactory) {
         });
     },
     this.deleteTravel = function (user, travel, data) {
+
+        console.log('USER', user);
+        console.log('TRAVEL', travel);
+
         var idRef = fireFactory.firebaseRef("users/" + user + "/travels/"+ travel);
         idRef.remove(function(){
             console.log("Travel Deletado!!!");
             // $rootScope.drawListPin();
         });
 
-        var lastTravelRef = fireFactory.firebaseRef("users/" + user);
-        lastTravelRef.update({lastTravel: data}, function(){
-            console.log("Last Travel Editado!!!");
-        });
+
+        if(data !== '' && data !== undefined){
+            var lastTravelRef = fireFactory.firebaseRef("users/" + user);
+            lastTravelRef.update({lastTravel: data}, function(){
+                console.log("Last Travel Editado!!!");
+            });
+        }
+        
     },
     this.submitEditLastTravel = function (user, data){
         var lastTravelRef = fireFactory.firebaseRef("users/" + user);
